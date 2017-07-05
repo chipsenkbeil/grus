@@ -1,2 +1,14 @@
-*.class
-*.log
+\#*\#
+.idea
+**.swp
+out/
+project/project
+project/target
+target/
+**.iml
+site/
+.DS_Store
+**.log
+.ensime
+.ensime_cache/
+
