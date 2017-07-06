@@ -17,7 +17,7 @@ import scala.util.Try
  *
  * @param config The configuration to use when publishing files
  */
-class Publisher(private val config: Config) {
+class Publisher(private val config: Config) extends Runnable {
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
 

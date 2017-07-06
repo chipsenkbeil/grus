@@ -13,7 +13,7 @@ import org.senkbeil.sitegen.utils.FileHelper
  *
  * @param config The configuration to use when generating files
  */
-class Generator(private val config: Config) {
+class Generator(private val config: Config) extends Runnable {
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
 

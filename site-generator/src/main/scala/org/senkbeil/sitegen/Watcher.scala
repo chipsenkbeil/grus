@@ -82,7 +82,7 @@ class Watcher(
   private val callback: (Path, Seq[Watcher.Event]) => Unit,
   private val waitTime: Long = Watcher.DefaultWaitTime,
   private val waitUnit: TimeUnit = Watcher.DefaultWaitUnit
-) { self =>
+) extends Runnable { self =>
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
 

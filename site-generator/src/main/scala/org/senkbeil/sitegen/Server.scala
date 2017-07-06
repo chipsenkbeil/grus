@@ -12,7 +12,7 @@ import scala.util.Try
  *
  * @param config The configuration to use when serving files
  */
-class Server(private val config: Config) {
+class Server(private val config: Config) extends Runnable {
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
 
