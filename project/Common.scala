@@ -8,7 +8,7 @@ object Common {
     "Sets scaling factor of running tests that are wrapped in scale(...)"
   )
 
-  def settings = Seq(
+  def settings: Seq[Setting[_]] = Seq(
     version := "0.1.0",
 
     organization := "org.senkbeil",
@@ -28,7 +28,8 @@ object Common {
     scalacOptions ++= Seq(
       "-encoding", "UTF-8",
       "-deprecation", "-unchecked", "-feature",
-      "-Xfatal-warnings"
+      "-Xfatal-warnings",
+      "-language:reflectiveCalls"
     ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 10)) => Seq(
         "-Ywarn-all", "-target:jvm-1.6"

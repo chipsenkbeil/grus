@@ -4,7 +4,7 @@ import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 /**
- * Main entrypoint for generating and serving docs.
+ * Main entrypoint for generating and serving site.
  */
 object Main {
   /** Logger for this class. */
@@ -14,18 +14,19 @@ object Main {
     val config = new Config(args)
 
     // Set global logger used throughout program
-    Logger.setDefaultLevel(config.defaultLogLevel())
+    import Config._ // For logLevel()
+    Logger.setDefaultLevel(config.logLevel())
 
     // Generate before other actions if indicated
-    if (config.generate()) {
+    if (config.usingGenerateCommand) {
       new Generator(config).run()
     }
 
     // Serve generated content
-    if (config.serve()) {
-      val rootPath = Paths.get(config.inputDir())
+    if (config.usingServeCommand) {
+      val rootPath = Paths.get(config.generate.inputDir())
 
-      val watcherThread = if (config.liveReload()) {
+      val watcherThread = if (config.serve.liveReload()) {
         logger.log(s"Watching $rootPath for changes")
         val watcher = new Watcher(
           path = rootPath,
@@ -33,7 +34,7 @@ object Main {
             logger.verbose(s"Detected ${events.length} change(s) at $rootPath")
             new Generator(config).run()
           },
-          waitTime = config.liveReloadWaitTime(),
+          waitTime = config.serve.liveReloadWaitTime(),
           waitUnit = TimeUnit.MILLISECONDS
         )
 
@@ -48,11 +49,11 @@ object Main {
       })
 
     // Publish generated content
-    } else if (config.publish()) {
+    } else if (config.usingPublishCommand) {
       new Publisher(config).run()
 
     // Print help info
-    } else if (!config.generate()) {
+    } else if (!config.usingGenerateCommand) {
       config.printHelp()
     }
   }

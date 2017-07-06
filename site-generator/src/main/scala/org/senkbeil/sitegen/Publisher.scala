@@ -25,9 +25,9 @@ class Publisher(private val config: Config) {
    * Publishes the content in the output directory.
    */
   def run(): Unit = logger.time(Logger.Level.Info, "Publish finished after ") {
-    val outputDirPath = Paths.get(config.outputDir())
-    val remoteName = config.publishRemoteName()
-    val remoteBranch = config.publishRemoteBranch()
+    val outputDirPath = Paths.get(config.generate.outputDir())
+    val remoteName = config.publish.remoteName()
+    val remoteBranch = config.publish.remoteBranch()
 
     val repoPath = {
       val rootPath = Paths.get(".").toAbsolutePath
@@ -37,12 +37,12 @@ class Publisher(private val config: Config) {
 
     logger.trace("Loading configuration data")
     val git = gitForPath(repoPath)
-    val authorName = config.publishAuthorName.toOption.orElse(
+    val authorName = config.publish.authorName.toOption.orElse(
       Option(git.getRepository.getConfig.getString("user", null, "name"))
     ).getOrElse(
       throw new IllegalStateException("No Git author name available!")
     )
-    val authorEmail = config.publishAuthorEmail.toOption.orElse(
+    val authorEmail = config.publish.authorEmail.toOption.orElse(
       Option(git.getRepository.getConfig.getString("user", null, "email"))
     ).getOrElse(
       throw new IllegalStateException("No Git author email available!")
@@ -93,7 +93,7 @@ class Publisher(private val config: Config) {
    * @return The path to the cached directory containing the repository
    */
   private def copyRepoToCache(repository: Repository, force: Boolean): Path = {
-    val cacheRootPath = Paths.get(config.publishCacheDir())
+    val cacheRootPath = Paths.get(config.publish.cacheDir())
     val alreadyExists = Files.exists(cacheRootPath)
 
     // If for some reason a file exists as our cache root, fail loudly

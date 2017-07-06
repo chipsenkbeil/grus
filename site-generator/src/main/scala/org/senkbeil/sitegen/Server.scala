@@ -20,8 +20,8 @@ class Server(private val config: Config) {
    * Runs the server.
    */
   def run(): Unit = {
-    val outputDir = config.outputDir()
-    val indexFiles = config.indexFiles()
+    val outputDir = config.generate.outputDir()
+    val indexFiles = config.serve.indexFiles()
     val hostedContent = unfiltered.filter.Planify {
       case GET(UFPath(path)) =>
         val rawPath = Paths.get(outputDir, path)
@@ -47,7 +47,7 @@ class Server(private val config: Config) {
               ContentType(mimeType) ~>
                 ResponseBytes(fileBytes)
             } catch {
-              case _: MatchError if config.allowUnsupportedMediaTypes() =>
+              case _: MatchError if config.serve.allowUnsupportedMediaTypes() =>
                 logResponse(Ok.code)
                 ResponseBytes(fileBytes)
               case _: MatchError =>
@@ -61,6 +61,6 @@ class Server(private val config: Config) {
         }
       case _ => MethodNotAllowed ~> ResponseString("Unknown request")
     }
-    unfiltered.jetty.Server.http(config.port()).plan(hostedContent).run()
+    unfiltered.jetty.Server.http(config.serve.port()).plan(hostedContent).run()
   }
 }

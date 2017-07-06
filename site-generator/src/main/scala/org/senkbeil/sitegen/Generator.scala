@@ -28,16 +28,16 @@ class Generator(private val config: Config) {
    */
   def run(): Unit = logger.time(Logger.Level.Info, "Gen finished after ") {
     // Provide warning about site host not being set when generating
-    if (!config.siteHost.supplied) logger.warn(
+    if (!config.generate.siteHost.supplied) logger.warn(
       "No site host provided when generating! " +
-      s"${config.siteHost()} will be used!"
+      s"${config.generate.siteHost()} will be used!"
     )
 
-    val outputDir = config.outputDir()
+    val outputDir = config.generate.outputDir()
 
-    val inputDir = config.inputDir()
-    val srcDir = config.srcDir()
-    val staticDir = config.staticDir()
+    val inputDir = config.generate.inputDir()
+    val srcDir = config.generate.srcDir()
+    val staticDir = config.generate.staticDir()
 
     val outputDirPath = Paths.get(outputDir)
     outputDirPath.getFileName
@@ -53,7 +53,7 @@ class Generator(private val config: Config) {
     FileUtils.copyDirectory(staticDirPath.toFile, outputDirPath.toFile)
 
     // Generate .nojekyll file
-    if (config.doNotGenerateNoJekyllFile()) {
+    if (config.generate.doNotGenerateNoJekyllFile()) {
       logger.trace(s"Not generating $NoJekyllFile")
     } else {
       logger.trace(s"Generating $NoJekyllFile")
@@ -107,12 +107,12 @@ class Generator(private val config: Config) {
     })
 
     // Produce a sitemap.xml representing the links
-    if (config.doNotGenerateSitemapFile()) {
+    if (config.generate.doNotGenerateSitemapFile()) {
       logger.trace(s"Not generating $SitemapFile")
     } else {
       logger.trace(s"Generating $SitemapFile")
       createSitemapFile(
-        config.siteHost(),
+        config.generate.siteHost(),
         pages,
         outputDirPath.resolve(SitemapFile)
       )

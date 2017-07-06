@@ -48,5 +48,5 @@ lazy val sbtPlugin = project
     name := "sbt-site-generator",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "org.senkbeil.sitegen.sbt"
-  )
+  ).dependsOn(siteGenerator)
 

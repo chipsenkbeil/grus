@@ -59,8 +59,8 @@ class Page private (
    */
   lazy val absoluteLink: String = {
     val srcDirPath = {
-      val inputDir = config.inputDir()
-      val srcDir = config.srcDir()
+      val inputDir = config.generate.inputDir()
+      val srcDir = config.generate.srcDir()
       Paths.get(inputDir, srcDir)
     }
 
@@ -128,6 +128,7 @@ class Page private (
         ))
 
         _result.failed.foreach(t => {
+          import Config._ // For stackTraceDepth()
           val errorName = t.getClass.getName
           val errorMessage = Option(t.getLocalizedMessage).getOrElse("<none>")
           val depth = config.stackTraceDepth()
@@ -148,13 +149,13 @@ class Page private (
   /** Represents the output path when the page is rendered. */
   lazy val outputPath: Path = {
     val srcDirPath = {
-      val inputDir = config.inputDir()
-      val srcDir = config.srcDir()
+      val inputDir = config.generate.inputDir()
+      val srcDir = config.generate.srcDir()
       Paths.get(inputDir, srcDir)
     }
 
     val outputDirPath = {
-      val outputDir = config.outputDir()
+      val outputDir = config.generate.outputDir()
       Paths.get(outputDir)
     }
 
@@ -189,8 +190,8 @@ class Page private (
    */
   lazy val isAtRoot: Boolean = {
     val srcDirPath = {
-      val inputDir = config.inputDir()
-      val srcDir = config.srcDir()
+      val inputDir = config.generate.inputDir()
+      val srcDir = config.generate.srcDir()
       Paths.get(inputDir, srcDir)
     }
     srcDirPath.relativize(path) == path.getFileName
@@ -236,7 +237,7 @@ class Page private (
    * @return The default layout instance
    */
   private def defaultLayout(context: Context): Layout = {
-    val defaultLayoutClassName = config.defaultPageLayout()
+    val defaultLayoutClassName = config.generate.defaultPageLayout()
     layoutFromClassName(defaultLayoutClassName, context)
   }
 

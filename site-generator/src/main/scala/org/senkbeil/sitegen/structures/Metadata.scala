@@ -63,14 +63,14 @@ object Metadata {
       .flatMap(r => Try(r.toBoolean).toOption)
 
     Metadata(
-      layout = layout.getOrElse(config.defaultPageLayout()),
+      layout = layout.getOrElse(config.generate.defaultPageLayout()),
       usingDefaultLayout = layout.isEmpty,
-      weight = weight.getOrElse(config.defaultPageWeight()),
-      render = render.getOrElse(config.defaultPageRender()),
+      weight = weight.getOrElse(config.generate.defaultPageWeight()),
+      render = render.getOrElse(config.generate.defaultPageRender()),
       title = title,
       link = link,
       redirect = redirect,
-      fake = fake.getOrElse(config.defaultPageFake()),
+      fake = fake.getOrElse(config.generate.defaultPageFake()),
       other = data.filterKeys(k => !reservedKeys.contains(k))
     )
   }
