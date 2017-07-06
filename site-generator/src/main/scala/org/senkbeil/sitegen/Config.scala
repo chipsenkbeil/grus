@@ -278,6 +278,9 @@ class Config(arguments: Seq[String]) extends ScallopConf(arguments) {
   // Enable displaying subcommands in help
   shortSubcommandsHelp(true)
 
+  // Mark version of tool
+  version(BuildInfo.version)
+
   // Process arguments
   verify()
 }
