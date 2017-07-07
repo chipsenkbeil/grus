@@ -88,6 +88,28 @@ class ThemeManager(
    */
   @throws[ThemeException]
   def loadTheme(theme: Theme): Unit = theme match {
+    case LocalSbtProjectTheme(dir) =>
+      if (!isSbtProjectDir(dir))
+        throw InvalidFileFormatThemeException(dir, "sbt project directory")
+
+      val targetDir = dir.listFiles()
+        .find(_.getName == "target").filter(_.isDirectory)
+      if (targetDir.isEmpty)
+        throw MissingContentThemeException("sbt target directory")
+
+      val majorVersion = BuildInfo.scalaVersion.split('.').take(2).mkString(".")
+      val scalaDir = targetDir.get.listFiles()
+        .find(_.getName == s"scala-$majorVersion").filter(_.isDirectory)
+      if (scalaDir.isEmpty)
+        throw MissingContentThemeException(s"sbt scala-$majorVersion directory")
+
+      val classDir = scalaDir.get.listFiles()
+        .find(_.getName == "classes").filter(_.isDirectory)
+      if (classDir.isEmpty)
+        throw MissingContentThemeException("sbt classes directory")
+
+      internalClassLoader.appendUrl(classDir.get.toURI.toURL)
+
     case LocalClassDirTheme(dir) =>
       if (!isClassDir(dir))
         throw InvalidFileFormatThemeException(dir, "class directory")
@@ -183,5 +205,15 @@ class ThemeManager(
    * @return True if a directory of class files, otherwise false
    */
   private def isClassDir(file: File): Boolean =
-    file.isDirectory && file.listFiles().forall(isClassFile)
+    file.isDirectory //&& file.listFiles().forall(isClassFile)
+
+  /**
+   * Determines if the file represents an sbt project directory.
+   *
+   * @param file The file to inspect
+   *
+   * @return True if a sbt project directory, otherwise false
+   */
+  private def isSbtProjectDir(file: File): Boolean =
+    file.isDirectory //&& file.listFiles().forall(isClassFile)
 }

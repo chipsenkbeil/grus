@@ -6,10 +6,12 @@ import java.nio.file.Paths
 
 import coursier.MavenRepository
 import org.rogach.scallop._
+import org.rogach.scallop.exceptions.{Help, ScallopException, ScallopResult, Version}
+import org.senkbeil.sitegen.Config.PreventConfigExit
 
 object Config {
   private val DefaultLogLevel: Logger.Level.Level = Logger.defaultLevel
-  private val DefaultStackTraceDepth: Int = -1
+  private val DefaultStackTraceDepth: Int = 10
 
   /** Aids in converting to log level from string. */
   private implicit val LogLevelConverter: ValueConverter[Logger.Level.Level] =
@@ -39,12 +41,16 @@ object Config {
   private implicit val LocalClassDirThemeConverter: ValueConverter[List[LocalClassDirTheme]] =
     listArgConverter[LocalClassDirTheme](s => LocalClassDirTheme(new File(s)))
 
+  /** Aids in converting to sbt project theme from string. */
+  private implicit val LocalSbtProjectThemeConverter: ValueConverter[List[LocalSbtProjectTheme]] =
+    listArgConverter[LocalSbtProjectTheme](s => LocalSbtProjectTheme(new File(s)))
+
   /** Aids in converting to Maven repository from string. */
   private implicit val MavenRepositoryConverter: ValueConverter[List[MavenRepository]] =
     listArgConverter[MavenRepository](s => MavenRepository(s))
 
   /** Represents common options across commands. */
-  trait CommandCommonOptions extends ScallopConfBase {
+  trait CommandCommonOptions extends ScallopConfBase with PreventConfigExit {
     /** Represents the fully-qualified class name of the default layout. */
     val logLevel: ScallopOption[Logger.Level.Level] =
       opt[Logger.Level.Level](
@@ -96,6 +102,29 @@ object Config {
       else DefaultStackTraceDepth
     }
   }
+
+  /** Mixin to prevent sys.exit(0) when printing help/version info. */
+  trait PreventConfigExit extends ScallopConfBase {
+    private var quickExit: Boolean = false
+
+    def isQuickExit: Boolean = quickExit
+
+    override protected def onError(e: Throwable): Unit = e match {
+      case r: ScallopResult if !throwError.value => r match {
+        case Help("") =>
+          builder.printHelp
+          quickExit = true
+        case Help(subname) =>
+          builder.findSubbuilder(subname).get.printHelp
+          quickExit = true
+        case Version =>
+          builder.vers.foreach(println)
+          quickExit = true
+        case ScallopException(message) => errorMessageHandler(message)
+      }
+      case e: Throwable => throw e
+    }
+  }
 }
 
 /**
@@ -104,7 +133,8 @@ object Config {
  * @param arguments The list of arguments fed into the CLI (same
  *                  arguments that are fed into the main method)
  */
-class Config(arguments: Seq[String]) extends ScallopConf(arguments) {
+class Config(arguments: Seq[String])
+  extends ScallopConf(arguments) with PreventConfigExit {
   // ===========================================================================
   // = COMMON OPTIONS AND SETTINGS
   // ===========================================================================
@@ -220,6 +250,15 @@ class Config(arguments: Seq[String]) extends ScallopConf(arguments) {
       opt[List[LocalClassDirTheme]](
         name = "class-dir-theme",
         descr = "The theme(s) to load from local directories of class files",
+        argName = "dir",
+        default = Some(Nil)
+      )
+
+    /** Represents custom theme(s) to load from sbt projects into the generator. */
+    val sbtProjectThemes: ScallopOption[List[LocalSbtProjectTheme]] =
+      opt[List[LocalSbtProjectTheme]](
+        name = "sbt-project-theme",
+        descr = "The theme(s) to load from class dirs of sbt projects",
         argName = "dir",
         default = Some(Nil)
       )

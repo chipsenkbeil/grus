@@ -38,3 +38,10 @@ case class LocalJarTheme(file: File) extends Theme
  * @param file The directory containing class files for the theme
  */
 case class LocalClassDirTheme(file: File) extends Theme
+
+/**
+ * Represents a theme structure represented by a local sbt project.
+ *
+ * @param file The directory of the sbt project representing the theme
+ */
+case class LocalSbtProjectTheme(file: File) extends Theme

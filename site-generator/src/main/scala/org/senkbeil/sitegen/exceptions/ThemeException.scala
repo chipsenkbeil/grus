@@ -56,6 +56,17 @@ case class InvalidFileFormatThemeException(
 }
 
 /**
+ * Represents a failure due to unavailable or missing content of a theme.
+ *
+ * @param content Description of missing content
+ */
+case class MissingContentThemeException(
+  content: String
+) extends ThemeException {
+  override def toString: String = s"Missing theme content: $content"
+}
+
+/**
  * Represents a failure related to accessing/loading a file (using Coursier)
  * that is tied to a theme.
  *

@@ -25,6 +25,7 @@ class Generator(private val config: Config) extends Runnable {
 
   /** Used for statistics about total theme sources. */
   private lazy val themeSourceCount =
+    config.generate.sbtProjectThemes().size +
     config.generate.classDirThemes().size +
     config.generate.jarThemes().size +
     config.generate.mavenThemes().size
@@ -34,6 +35,10 @@ class Generator(private val config: Config) extends Runnable {
     val manager = new ThemeManager(config)
 
     // Explicitly load themes
+    config.generate.sbtProjectThemes().foreach(t => {
+      logger.trace(s"Loading theme from sbt project: ${t.file.getPath}")
+      manager.loadTheme(t)
+    })
     config.generate.classDirThemes().foreach(t => {
       logger.trace(s"Loading theme from class directory: ${t.file.getPath}")
       manager.loadTheme(t)
