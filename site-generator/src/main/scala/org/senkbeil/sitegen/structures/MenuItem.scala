@@ -4,7 +4,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.{FalseFileFilter, TrueFileFilter}
-import org.senkbeil.sitegen.Config
+import org.senkbeil.sitegen.{Config, ThemeManager}
 import org.senkbeil.sitegen.utils.FileHelper
 
 import scala.annotation.tailrec
@@ -70,6 +70,7 @@ object MenuItem {
    * for markdown files and using them as the basis of children menu items.
    *
    * @param config Used for defaults
+   * @param themeManager Used to look up page classes for a theme
    * @param path The path to use as the basis for generating
    *             menu items
    * @param dirUseFirstChild If true, will use the link of the first child
@@ -79,6 +80,7 @@ object MenuItem {
    */
   def fromPath(
     config: Config,
+    themeManager: ThemeManager,
     path: Path,
     dirUseFirstChild: Boolean = false
   ): Seq[MenuItem] = {
@@ -100,6 +102,7 @@ object MenuItem {
       .filter(_.getParent == path)
       .map(p => createLinkedMenuItem(
         config,
+        themeManager,
         p,
         allPaths,
         dirUseFirstChild = dirUseFirstChild
@@ -112,9 +115,10 @@ object MenuItem {
    * potential children, and path to be the menu item.
    *
    * @param config Used for defaults
+   * @param themeManager Used to look up page classes for a theme
+   * @param path The path to serve as the menu item
    * @param candidateChildren All paths to consider as children for the new
    *                          menu item
-   * @param path The path to serve as the menu item
    * @param dirUseFirstChild If true, will use the link of the first child
    *                         under the menu item if the menu item's provided
    *                         path is a directory
@@ -122,12 +126,14 @@ object MenuItem {
    */
   private def createLinkedMenuItem(
     config: Config,
+    themeManager: ThemeManager,
     path: Path,
     candidateChildren: Seq[Path],
     dirUseFirstChild: Boolean
   ): MenuItem = {
     val children = candidateChildren.filter(_.getParent == path).map(p =>
-      createLinkedMenuItem(config, p, candidateChildren, dirUseFirstChild)
+      createLinkedMenuItem(config, themeManager, p,
+        candidateChildren, dirUseFirstChild)
     ).sortBy(_.weight)
 
     // If the menu item has a fake child, it is an index file, meaning that
@@ -140,7 +146,7 @@ object MenuItem {
     val fakeChildLink = fakeChild.flatMap(_.link).filterNot(_ == "index")
     val normalChildren = children.filterNot(_.fake)
 
-    val page = Page.newInstance(config, path)
+    val page = Page.newInstance(config, themeManager, path)
     val isDir = page.isDirectory
     val isFake = !isDir && page.metadata.fake
 

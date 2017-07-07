@@ -26,6 +26,10 @@ object Dependencies {
       "commons-codec" % "commons-codec" % "1.10", // Base64 encoding support
       "commons-io" % "commons-io" % "2.5", // File copy support
 
+      // For downloading themes via Maven
+      "io.get-coursier" %% "coursier" % "1.0.0-RC6",
+      "io.get-coursier" %% "coursier-cache" % "1.0.0-RC6",
+
       // For hosting local server containing generated sources
       "ws.unfiltered" %% "unfiltered" % unfilteredVersion.value,
       "ws.unfiltered" %% "unfiltered-filter" % unfilteredVersion.value,

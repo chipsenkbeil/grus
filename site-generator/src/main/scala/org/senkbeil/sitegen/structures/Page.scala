@@ -11,7 +11,7 @@ import com.vladsch.flexmark.ext.yaml.front.matter.{AbstractYamlFrontMatterVisito
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.options.MutableDataSet
-import org.senkbeil.sitegen.{Config, Logger}
+import org.senkbeil.sitegen.{Config, Logger, ThemeManager}
 import org.senkbeil.sitegen.layouts.{Context, Layout}
 import org.senkbeil.sitegen.utils.FileHelper
 
@@ -21,11 +21,13 @@ import scala.util.Try
  * Represents a page of content.
  *
  * @param config Used to fill in defaults
+ * @param themeManager Used to look up page classes for a theme
  * @param path The path to the raw page content
  * @param logger The logger to use with the page
  */
 class Page private (
   val config: Config,
+  val themeManager: ThemeManager,
   val path: Path,
   private val logger: Logger
 ) {
@@ -256,11 +258,8 @@ class Page private (
     className: String,
     context: Context
   ): Layout = {
-    // Retrieve the layout class
-    // TODO: Replace with support for custom classloader that contains the
-    //       stock layout built into the sitegen project as well as any
-    //       custom classes for unique themes
-    val layoutClass = Class.forName(className)
+    // Retrieve the layout class using theme manager
+    val layoutClass = themeManager.loadClass(className)
 
     // Validate the provided class is of the layout type
     if (!Layout.classIsLayout(layoutClass)) {
@@ -345,14 +344,17 @@ object Page {
      * Creates a new page instance with session logging.
      *
      * @param config Used to provide defaults
+     * @param themeManager Used to look up page classes for a theme
      * @param path The path to the raw page content
      * @return The new page instance
      */
     def newInstance(
       config: Config,
+      themeManager: ThemeManager,
       path: Path
     ): Page = new Page(
       config,
+      themeManager,
       path,
       new Logger(classOf[Page])
         .newSession(path.toString)
@@ -396,11 +398,13 @@ object Page {
    * Creates a new page instance with no logging.
    *
    * @param config Used to provide defaults
+   * @param themeManager Used to look up page classes for a theme
    * @param path The path to the raw page content
    * @return The new page instance
    */
   def newInstance(
     config: Config,
+    themeManager: ThemeManager,
     path: Path
-  ): Page = new Page(config, path, Logger.Silent)
+  ): Page = new Page(config, themeManager, path, Logger.Silent)
 }

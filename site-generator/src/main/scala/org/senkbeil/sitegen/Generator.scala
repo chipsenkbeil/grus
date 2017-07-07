@@ -23,6 +23,33 @@ class Generator(private val config: Config) extends Runnable {
   /** Used for Google search. */
   private val SitemapFile = "sitemap.xml"
 
+  /** Used for statistics about total theme sources. */
+  private lazy val themeSourceCount =
+    config.generate.classDirThemes().size +
+    config.generate.jarThemes().size +
+    config.generate.mavenThemes().size
+
+  /** Represents the theme manager used for generating the site. */
+  lazy val themeManager: ThemeManager = {
+    val manager = new ThemeManager(config)
+
+    // Explicitly load themes
+    config.generate.classDirThemes().foreach(t => {
+      logger.trace(s"Loading theme from class directory: ${t.file.getPath}")
+      manager.loadTheme(t)
+    })
+    config.generate.jarThemes().foreach(t => {
+      logger.trace(s"Loading theme from jar: ${t.file.getPath}")
+      manager.loadTheme(t)
+    })
+    config.generate.mavenThemes().foreach(t => {
+      logger.trace(s"Loading theme from Maven: ${t.depString}")
+      manager.loadTheme(t)
+    })
+
+    manager
+  }
+
   /**
    * Runs the generator.
    */
@@ -32,6 +59,9 @@ class Generator(private val config: Config) extends Runnable {
       "No site host provided when generating! " +
       s"${config.generate.siteHost()} will be used!"
     )
+
+    logger.info(s"Loading theme data from $themeSourceCount sources")
+    themeManager // Explicitly load themes
 
     val outputDir = config.generate.outputDir()
 
@@ -67,10 +97,15 @@ class Generator(private val config: Config) extends Runnable {
 
     val linkedMainMenuItems = MenuItem.fromPath(
       config,
+      themeManager,
       srcDirPath,
       dirUseFirstChild = true
     ).map(_.copy(children = Nil))
-    val linkedSideMenuItems = MenuItem.fromPath(config, srcDirPath)
+    val linkedSideMenuItems = MenuItem.fromPath(
+      config,
+      themeManager,
+      srcDirPath
+    )
 
     // Create our layout context
     val context = Context(
@@ -80,7 +115,9 @@ class Generator(private val config: Config) extends Runnable {
 
     // For each markdown file, generate its content and produce a file
     val mdFiles = FileHelper.markdownFiles(srcDirPath)
-    val pages = mdFiles.map(f => Page.Session.newInstance(config, f)).toSeq
+    val pages = mdFiles.map(f =>
+      Page.Session.newInstance(config, themeManager, f)
+    ).toSeq
 
     pages.foreach(page => {
       @inline def markMenuItem(menuItems: Seq[MenuItem]): Seq[MenuItem] = {
