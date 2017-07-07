@@ -1,6 +1,6 @@
 package org.senkbeil.sitegen.structures
 
-import org.senkbeil.sitegen.Config
+import org.senkbeil.sitegen.Config.CommandGenerateOptions
 
 import scala.util.Try
 
@@ -46,11 +46,14 @@ object Metadata {
   /**
    * Converts a map of keys and associated values into a metadata construct.
    *
-   * @param config The global configuration used to fill in defaults
+   * @param generateOptions The global configuration used to fill in defaults
    * @param data The data to parse
    * @return The new metadata instance
    */
-  def fromMap(config: Config, data: Map[String, Seq[String]]): Metadata = {
+  def fromMap(
+    generateOptions: CommandGenerateOptions,
+    data: Map[String, Seq[String]]
+  ): Metadata = {
     val title = data.get("title").flatMap(_.headOption)
     val link = data.get("link").flatMap(_.headOption)
     val redirect = data.get("redirect").flatMap(_.headOption)
@@ -63,14 +66,14 @@ object Metadata {
       .flatMap(r => Try(r.toBoolean).toOption)
 
     Metadata(
-      layout = layout.getOrElse(config.generate.defaultPageLayout()),
+      layout = layout.getOrElse(generateOptions.defaultPageLayout()),
       usingDefaultLayout = layout.isEmpty,
-      weight = weight.getOrElse(config.generate.defaultPageWeight()),
-      render = render.getOrElse(config.generate.defaultPageRender()),
+      weight = weight.getOrElse(generateOptions.defaultPageWeight()),
+      render = render.getOrElse(generateOptions.defaultPageRender()),
       title = title,
       link = link,
       redirect = redirect,
-      fake = fake.getOrElse(config.generate.defaultPageFake()),
+      fake = fake.getOrElse(generateOptions.defaultPageFake()),
       other = data.filterKeys(k => !reservedKeys.contains(k))
     )
   }
@@ -79,18 +82,18 @@ object Metadata {
    * Converts a Java map of keys and associated values into a
    * metadata construct.
    *
-   * @param config The global configuration used to fill in defaults
+   * @param generateOptions The global configuration used to fill in defaults
    * @param data The data to parse
    * @return The new metadata instance
    */
   def fromJavaMap(
-    config: Config,
+    generateOptions: CommandGenerateOptions,
     data: java.util.Map[String, java.util.List[String]]
   ): Metadata = {
     import scala.collection.JavaConverters._
 
     val scalaData = data.asScala.mapValues(_.asScala.toSeq).toMap
 
-    fromMap(config, scalaData)
+    fromMap(generateOptions, scalaData)
   }
 }

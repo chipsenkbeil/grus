@@ -15,7 +15,7 @@ object Main {
     if (config.isQuickExit) return // Hack to get around sys.exit(...)
 
     // Set global logger used throughout program
-    import Config._ // For logLevel()
+    import Config.Implicits._ // For logLevel()
     Logger.setDefaultLevel(config.logLevel())
 
     // Generate before other actions if indicated
@@ -27,7 +27,7 @@ object Main {
     // Serve generated content
     if (config.usingServeCommand) {
       if (config.serve.isQuickExit) return
-      val rootPath = Paths.get(config.generate.inputDir())
+      val rootPath = Paths.get(config.serve.inputDir())
 
       val watcherThread = if (config.serve.liveReload()) {
         logger.log(s"Watching $rootPath for changes")
@@ -35,7 +35,7 @@ object Main {
           path = rootPath,
           callback = (rootPath, events) => {
             logger.verbose(s"Detected ${events.length} change(s) at $rootPath")
-            new Generator(config).run()
+            new Generator(config.serve).run()
           },
           waitTime = config.serve.liveReloadWaitTime(),
           waitUnit = TimeUnit.MILLISECONDS
@@ -43,6 +43,11 @@ object Main {
 
         Some(watcher.runAsync())
       } else None
+
+      if (config.serve.generateOnStart()) {
+        logger.log("Regenerating site before server starts")
+        new Generator(config.serve).run()
+      }
 
       new Server(config).run()
 

@@ -49,6 +49,43 @@ object Config {
   private implicit val MavenRepositoryConverter: ValueConverter[List[MavenRepository]] =
     listArgConverter[MavenRepository](s => MavenRepository(s))
 
+  // ===========================================================================
+  // = IMPLICITS
+  // ===========================================================================
+
+  object Implicits {
+    /** Represents an implicit wrapper of a Config instance. */
+    implicit class ConfigWrapper(config: Config) {
+      /**
+       * Represents the consolidated log level of the configuration.
+       *
+       * @return The log level associated with the active subcommand
+       */
+      def logLevel(): Logger.Level.Level = {
+        if (config.usingGenerateCommand) config.generate.logLevel()
+        else if (config.usingServeCommand) config.serve.logLevel()
+        else if (config.usingPublishCommand) config.publish.logLevel()
+        else DefaultLogLevel
+      }
+
+      /**
+       * Represents the consolidated stack trace depth of the configuration.
+       *
+       * @return The depth of the stack trace associated with the active subcommand
+       */
+      def stackTraceDepth(): Int = {
+        if (config.usingGenerateCommand) config.generate.stackTraceDepth()
+        else if (config.usingServeCommand) config.serve.stackTraceDepth()
+        else if (config.usingPublishCommand) config.publish.stackTraceDepth()
+        else DefaultStackTraceDepth
+      }
+    }
+  }
+
+  // ===========================================================================
+  // = COMMON SETTINGS
+  // ===========================================================================
+
   /** Represents common options across commands. */
   trait CommandCommonOptions extends ScallopConfBase with PreventConfigExit {
     /** Represents the fully-qualified class name of the default layout. */
@@ -76,33 +113,6 @@ object Config {
     shortSubcommandsHelp(true)
   }
 
-  /** Represents an implicit wrapper of a Config instance. */
-  implicit class ConfigWrapper(config: Config) {
-    /**
-      * Represents the consolidated log level of the configuration.
-      *
-      * @return The log level associated with the active subcommand
-      */
-    def logLevel(): Logger.Level.Level = {
-      if (config.usingGenerateCommand) config.generate.logLevel()
-      else if (config.usingServeCommand) config.serve.logLevel()
-      else if (config.usingPublishCommand) config.publish.logLevel()
-      else DefaultLogLevel
-    }
-
-    /**
-      * Represents the consolidated stack trace depth of the configuration.
-      *
-      * @return The depth of the stack trace associated with the active subcommand
-      */
-    def stackTraceDepth(): Int = {
-      if (config.usingGenerateCommand) config.generate.stackTraceDepth()
-      else if (config.usingServeCommand) config.serve.stackTraceDepth()
-      else if (config.usingPublishCommand) config.publish.stackTraceDepth()
-      else DefaultStackTraceDepth
-    }
-  }
-
   /** Mixin to prevent sys.exit(0) when printing help/version info. */
   trait PreventConfigExit extends ScallopConfBase {
     private var quickExit: Boolean = false
@@ -125,34 +135,17 @@ object Config {
       case e: Throwable => throw e
     }
   }
-}
-
-/**
- * Represents the CLI configuration for the site generator tool.
- *
- * @param arguments The list of arguments fed into the CLI (same
- *                  arguments that are fed into the main method)
- */
-class Config(arguments: Seq[String])
-  extends ScallopConf(arguments) with PreventConfigExit {
-  // ===========================================================================
-  // = COMMON OPTIONS AND SETTINGS
-  // ===========================================================================
-  import Config._
 
   // ===========================================================================
   // = GENERATE SETTINGS
   // ===========================================================================
 
-  /** Represents the command to regenerate the site. */
-  val generate = new Subcommand("generate") with CommandCommonOptions {
-    descr("Generates the site")
-
+  trait CommandGenerateOptions extends CommandCommonOptions {
     /** Represents the fully-qualified class name of the default layout. */
     val defaultPageLayout: ScallopOption[String] = opt[String](
       descr = "The class representing the default layout if one is not specified",
       argName = "layout",
-      default = Some(classOf[org.senkbeil.sitegen.layouts.DefaultPage].getName)
+      default = Some(classOf[org.senkbeil.sitegen.layouts.Page].getName)
     )
 
     /** Represents the weight for a page if not specified. */
@@ -272,18 +265,12 @@ class Config(arguments: Seq[String])
         default = Some(List(MavenRepository("https://repo1.maven.org/maven2")))
       )
   }
-  addSubcommand(generate)
-
-  def usingGenerateCommand: Boolean = subcommand.exists(_ == generate)
 
   // ===========================================================================
   // = SERVE SETTINGS
   // ===========================================================================
 
-  /** Represents the command to serve the site using a local server. */
-  val serve = new Subcommand("serve") with CommandCommonOptions {
-    descr("Serves the site using a local server")
-
+  trait CommandServeOptions extends CommandGenerateOptions {
     /** Represents the port used when serving content. */
     val port: ScallopOption[Int] = opt[Int](
       descr = "The port to use when serving files",
@@ -326,19 +313,19 @@ class Config(arguments: Seq[String])
       argName = "file",
       default = Some(List("index.html", "index.htm"))
     )
-  }
-  addSubcommand(serve)
 
-  def usingServeCommand: Boolean = subcommand.exists(_ == serve)
+    /** Represents whether or not to generate site on server start. */
+    val generateOnStart: ScallopOption[Boolean] = opt[Boolean](
+      descr = "If specified, regenerates the site when the server starts",
+      default = Some(false)
+    )
+  }
 
   // ===========================================================================
   // = PUBLISH SETTINGS
   // ===========================================================================
 
-  /** Represents the command to publish the built site. */
-  val publish = new Subcommand("publish") with CommandCommonOptions {
-    descr("Publishes the site to Github Pages")
-
+  trait CommandPublishOptions extends CommandCommonOptions {
     val remoteName: ScallopOption[String] = opt[String](
       descr = "The remote name used as the destination of the publish",
       argName = "name",
@@ -363,6 +350,12 @@ class Config(arguments: Seq[String])
       argName = "dir"
     )
 
+    val outputDir: ScallopOption[String] = opt[String](
+      descr = "The output directory containing the site to publish",
+      argName = "dir",
+      default = Some("out")
+    )
+
     val forceCopy: ScallopOption[Boolean] = opt[Boolean](
       descr = "If provided, forces the copying of the repository to the cache",
       default = Some(false)
@@ -379,6 +372,53 @@ class Config(arguments: Seq[String])
       default = None,
       argName = "email"
     )
+  }
+}
+
+/**
+ * Represents the CLI configuration for the site generator tool.
+ *
+ * @param arguments The list of arguments fed into the CLI (same
+ *                  arguments that are fed into the main method)
+ */
+class Config(arguments: Seq[String])
+  extends ScallopConf(arguments) with PreventConfigExit {
+  // ===========================================================================
+  // = COMMON OPTIONS AND SETTINGS
+  // ===========================================================================
+  import Config._
+
+  // ===========================================================================
+  // = GENERATE SETTINGS
+  // ===========================================================================
+
+  /** Represents the command to regenerate the site. */
+  val generate = new Subcommand("generate") with CommandGenerateOptions {
+    descr("Generates the site")
+  }
+  addSubcommand(generate)
+
+  def usingGenerateCommand: Boolean = subcommand.exists(_ == generate)
+
+  // ===========================================================================
+  // = SERVE SETTINGS
+  // ===========================================================================
+
+  /** Represents the command to serve the site using a local server. */
+  val serve = new Subcommand("serve") with CommandServeOptions {
+    descr("Serves the site using a local server")
+  }
+  addSubcommand(serve)
+
+  def usingServeCommand: Boolean = subcommand.exists(_ == serve)
+
+  // ===========================================================================
+  // = PUBLISH SETTINGS
+  // ===========================================================================
+
+  /** Represents the command to publish the built site. */
+  val publish = new Subcommand("publish") with CommandPublishOptions {
+    descr("Publishes the site to Github Pages")
   }
   addSubcommand(publish)
 

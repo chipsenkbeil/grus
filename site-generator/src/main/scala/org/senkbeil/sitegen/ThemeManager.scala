@@ -3,6 +3,7 @@ package org.senkbeil.sitegen
 import java.io.File
 import java.net.{URL, URLClassLoader}
 
+import org.senkbeil.sitegen.Config.CommandGenerateOptions
 import org.senkbeil.sitegen.exceptions._
 
 import scala.annotation.tailrec
@@ -11,12 +12,12 @@ import scala.util.Try
 /**
  * Loads and manages themes for the site generator.
  *
- * @param config The configuration to use when working with themes
+ * @param generateOptions The generation options to use when working with themes
  * @param classLoader The class loader to use as the parent to the
  *                    manager's internal class loader
  */
 class ThemeManager(
-  private val config: Config,
+  private val generateOptions: CommandGenerateOptions,
   private val classLoader: ClassLoader = classOf[ThemeManager].getClassLoader
 ) {
   /** Represents the internal class loader used to contain all themes. */
@@ -147,7 +148,7 @@ class ThemeManager(
     ))
 
     // Mark repositories to check for theme
-    val repositories = Seq(Cache.ivy2Local) ++ config.generate.mavenThemeRepos()
+    val repositories = Seq(Cache.ivy2Local) ++ generateOptions.mavenThemeRepos()
 
     val fetch = Fetch.from(repositories, Cache.fetch())
     val resolution = start.process.run(fetch).unsafePerformSync

@@ -8,6 +8,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand.ResetType
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.senkbeil.sitegen.Config.CommandPublishOptions
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -15,19 +16,29 @@ import scala.util.Try
 /**
  * Represents a publisher of content based on a configuration.
  *
- * @param config The configuration to use when publishing files
+ * @param publishOptions The publish-specific options to use
  */
-class Publisher(private val config: Config) extends Runnable {
+class Publisher(
+  private val publishOptions: CommandPublishOptions
+) extends Runnable {
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
+
+  /**
+   * Creates a publisher using the stock `config.publish` options.
+   *
+   * @param config The configuration to use when publishing files
+   * @return The new publisher instance
+   */
+  def this(config: Config) = this(config.publish)
 
   /**
    * Publishes the content in the output directory.
    */
   def run(): Unit = logger.time(Logger.Level.Info, "Publish finished after ") {
-    val outputDirPath = Paths.get(config.generate.outputDir())
-    val remoteName = config.publish.remoteName()
-    val remoteBranch = config.publish.remoteBranch()
+    val outputDirPath = Paths.get(publishOptions.outputDir())
+    val remoteName = publishOptions.remoteName()
+    val remoteBranch = publishOptions.remoteBranch()
 
     val repoPath = {
       val rootPath = Paths.get(".").toAbsolutePath
@@ -37,12 +48,12 @@ class Publisher(private val config: Config) extends Runnable {
 
     logger.trace("Loading configuration data")
     val git = gitForPath(repoPath)
-    val authorName = config.publish.authorName.toOption.orElse(
+    val authorName = publishOptions.authorName.toOption.orElse(
       Option(git.getRepository.getConfig.getString("user", null, "name"))
     ).getOrElse(
       throw new IllegalStateException("No Git author name available!")
     )
-    val authorEmail = config.publish.authorEmail.toOption.orElse(
+    val authorEmail = publishOptions.authorEmail.toOption.orElse(
       Option(git.getRepository.getConfig.getString("user", null, "email"))
     ).getOrElse(
       throw new IllegalStateException("No Git author email available!")
@@ -93,7 +104,7 @@ class Publisher(private val config: Config) extends Runnable {
    * @return The path to the cached directory containing the repository
    */
   private def copyRepoToCache(repository: Repository, force: Boolean): Path = {
-    val cacheRootPath = Paths.get(config.publish.cacheDir())
+    val cacheRootPath = Paths.get(publishOptions.cacheDir())
     val alreadyExists = Files.exists(cacheRootPath)
 
     // If for some reason a file exists as our cache root, fail loudly

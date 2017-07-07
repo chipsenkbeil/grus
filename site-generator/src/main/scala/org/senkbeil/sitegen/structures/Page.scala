@@ -11,7 +11,8 @@ import com.vladsch.flexmark.ext.yaml.front.matter.{AbstractYamlFrontMatterVisito
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.options.MutableDataSet
-import org.senkbeil.sitegen.{Config, Logger, ThemeManager}
+import org.senkbeil.sitegen.Config.CommandGenerateOptions
+import org.senkbeil.sitegen.{Logger, ThemeManager}
 import org.senkbeil.sitegen.layouts.{Context, Layout}
 import org.senkbeil.sitegen.utils.FileHelper
 
@@ -20,13 +21,13 @@ import scala.util.Try
 /**
  * Represents a page of content.
  *
- * @param config Used to fill in defaults
+ * @param generateOptions Used to fill in defaults
  * @param themeManager Used to look up page classes for a theme
  * @param path The path to the raw page content
  * @param logger The logger to use with the page
  */
 class Page private (
-  val config: Config,
+  val generateOptions: CommandGenerateOptions,
   val themeManager: ThemeManager,
   val path: Path,
   private val logger: Logger
@@ -61,8 +62,8 @@ class Page private (
    */
   lazy val absoluteLink: String = {
     val srcDirPath = {
-      val inputDir = config.generate.inputDir()
-      val srcDir = config.generate.srcDir()
+      val inputDir = generateOptions.inputDir()
+      val srcDir = generateOptions.srcDir()
       Paths.get(inputDir, srcDir)
     }
 
@@ -130,10 +131,9 @@ class Page private (
         ))
 
         _result.failed.foreach(t => {
-          import Config._ // For stackTraceDepth()
           val errorName = t.getClass.getName
           val errorMessage = Option(t.getLocalizedMessage).getOrElse("<none>")
-          val depth = config.stackTraceDepth()
+          val depth = generateOptions.stackTraceDepth()
           val stackTrace =
             if (depth < 0) t.getStackTrace
             else t.getStackTrace.take(depth)
@@ -151,13 +151,13 @@ class Page private (
   /** Represents the output path when the page is rendered. */
   lazy val outputPath: Path = {
     val srcDirPath = {
-      val inputDir = config.generate.inputDir()
-      val srcDir = config.generate.srcDir()
+      val inputDir = generateOptions.inputDir()
+      val srcDir = generateOptions.srcDir()
       Paths.get(inputDir, srcDir)
     }
 
     val outputDirPath = {
-      val outputDir = config.generate.outputDir()
+      val outputDir = generateOptions.outputDir()
       Paths.get(outputDir)
     }
 
@@ -192,8 +192,8 @@ class Page private (
    */
   lazy val isAtRoot: Boolean = {
     val srcDirPath = {
-      val inputDir = config.generate.inputDir()
-      val srcDir = config.generate.srcDir()
+      val inputDir = generateOptions.inputDir()
+      val srcDir = generateOptions.srcDir()
       Paths.get(inputDir, srcDir)
     }
     srcDirPath.relativize(path) == path.getFileName
@@ -239,7 +239,7 @@ class Page private (
    * @return The default layout instance
    */
   private def defaultLayout(context: Context): Layout = {
-    val defaultLayoutClassName = config.generate.defaultPageLayout()
+    val defaultLayoutClassName = generateOptions.defaultPageLayout()
     layoutFromClassName(defaultLayoutClassName, context)
   }
 
@@ -296,7 +296,7 @@ class Page private (
     logger.trace(s"Extracting front matter from markdown file")
     val yamlVisitor = new AbstractYamlFrontMatterVisitor
     yamlVisitor.visit(node)
-    Metadata.fromJavaMap(config, yamlVisitor.getData)
+    Metadata.fromJavaMap(generateOptions, yamlVisitor.getData)
   }
 
   /**
@@ -343,17 +343,17 @@ object Page {
     /**
      * Creates a new page instance with session logging.
      *
-     * @param config Used to provide defaults
+     * @param generateOptions Used to provide defaults
      * @param themeManager Used to look up page classes for a theme
      * @param path The path to the raw page content
      * @return The new page instance
      */
     def newInstance(
-      config: Config,
+      generateOptions: CommandGenerateOptions,
       themeManager: ThemeManager,
       path: Path
     ): Page = new Page(
-      config,
+      generateOptions,
       themeManager,
       path,
       new Logger(classOf[Page])
@@ -397,14 +397,14 @@ object Page {
   /**
    * Creates a new page instance with no logging.
    *
-   * @param config Used to provide defaults
+   * @param generateOptions Used to provide defaults
    * @param themeManager Used to look up page classes for a theme
    * @param path The path to the raw page content
    * @return The new page instance
    */
   def newInstance(
-    config: Config,
+    generateOptions: CommandGenerateOptions,
     themeManager: ThemeManager,
     path: Path
-  ): Page = new Page(config, themeManager, path, Logger.Silent)
+  ): Page = new Page(generateOptions, themeManager, path, Logger.Silent)
 }

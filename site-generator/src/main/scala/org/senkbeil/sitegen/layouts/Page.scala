@@ -10,38 +10,24 @@ import scalatags.Text.all._
 
 /**
  * Represents the layout for a common site page.
- *
- * @param preHeadContent Content to be added at the beginning of the <head>
- * @param postHeadContent Content to be added at the end of the <head>
- * @param preBodyContent Content to be added at the beginning of the <body>
- * @param postBodyContent Content to be added at the end of the <body>
- * @param htmlModifiers Modifiers to apply on the <html> tag
- * @param bodyModifiers Modifiers to apply on the <body> tag
  */
-abstract class Page(
-  val preHeadContent: Seq[Modifier] = Nil,
-  val postHeadContent: Seq[Modifier] = Nil,
-  val preBodyContent: Seq[Modifier] = Nil,
-  val postBodyContent: Seq[Modifier] = Nil,
-  val htmlModifiers: Seq[Modifier] = Nil,
-  val bodyModifiers: Seq[Modifier] = Nil
-) extends Layout {
+class Page extends Layout {
   private lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
   private lazy val newHeadContent = (content: Seq[Modifier], date: Date) =>
-    preHeadContent ++
+    preHeadContent(context) ++
     Seq(
       meta(charset := "utf-8"),
       meta(name := "generator", attr("content") := BuildInfo.name + " " + BuildInfo.version),
       meta(name := "generation-date", attr("content") := dateFormat.format(date))
     ) ++ content ++
-    postHeadContent ++
+    postHeadContent(context) ++
     context.title.map(t => tag("title")(t))
 
   private lazy val newBodyContent = (content: Seq[Modifier]) =>
-    preBodyContent ++
+    preBodyContent(context) ++
     content ++
-    postBodyContent
+    postBodyContent(context)
 
   /**
    * Renders a generic page.
@@ -54,9 +40,59 @@ abstract class Page(
     bodyContent: Seq[Modifier],
     headContent: Seq[Modifier]
   ): Modifier = {
-    html(htmlModifiers: _*)(
+    html(htmlModifiers(context): _*)(
       head(newHeadContent(headContent, Date.from(Instant.now())): _*),
-      body(bodyModifiers: _*)(newBodyContent(bodyContent): _*)
+      body(bodyModifiers(context): _*)(newBodyContent(bodyContent): _*)
     )
   }
+
+  /**
+   * Returns content to be added at the beginning of the <head> tag.
+   *
+   * @param context The context of the layout to use when generating the content
+   * @return The content to be added
+   */
+  protected def preHeadContent(context: Context): Seq[Modifier] = Nil
+
+  /**
+   * Returns content to be added at the end of the <head> tag.
+   *
+   * @param context The context of the layout to use when generating the content
+   * @return The content to be added
+   */
+  protected def postHeadContent(context: Context): Seq[Modifier] = Nil
+
+  /**
+   * Returns content to be added at the beginning of the <body> tag.
+   *
+   * @param context The context of the layout to use when generating the content
+   * @return The content to be added
+   */
+  protected def preBodyContent(context: Context): Seq[Modifier] = Nil
+
+  /**
+   * Returns content to be added at the end of the <body> tag.
+   *
+   * @param context The context of the layout to use when generating the content
+   * @return The content to be added
+   */
+  protected def postBodyContent(context: Context): Seq[Modifier] = Nil
+
+  /**
+   * Returns modifiers to be applied on the <html> tag.
+   *
+   * @param context The context of the layout to use when generating
+   *                the modifiers
+   * @return The modifiers to be added
+   */
+  protected def htmlModifiers(context: Context): Seq[Modifier] = Nil
+
+  /**
+   * Returns modifiers to be applied on the <body> tag.
+   *
+   * @param context The context of the layout to use when generating
+   *                the modifiers
+   * @return The modifiers to be added
+   */
+  protected def bodyModifiers(context: Context): Seq[Modifier] = Nil
 }

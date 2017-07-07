@@ -2,6 +2,7 @@ package org.senkbeil.sitegen
 
 import java.nio.file.{Files, Paths}
 
+import org.senkbeil.sitegen.Config.CommandServeOptions
 import unfiltered.request.{GET, Mime, Path => UFPath}
 import unfiltered.response._
 
@@ -10,18 +11,28 @@ import scala.util.Try
 /**
  * Represents a file server.
  *
- * @param config The configuration to use when serving files
+ * @param serveOptions The serve-specific options to use
  */
-class Server(private val config: Config) extends Runnable {
+class Server(
+  private val serveOptions: CommandServeOptions
+) extends Runnable {
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
+
+  /**
+   * Creates a server using the stock `config.serve` options.
+   *
+   * @param config The configuration to use when serving files
+   * @return The new server instance
+   */
+  def this(config: Config) = this(config.serve)
 
   /**
    * Runs the server.
    */
   def run(): Unit = {
-    val outputDir = config.generate.outputDir()
-    val indexFiles = config.serve.indexFiles()
+    val outputDir = serveOptions.outputDir()
+    val indexFiles = serveOptions.indexFiles()
     val hostedContent = unfiltered.filter.Planify {
       case GET(UFPath(path)) =>
         val rawPath = Paths.get(outputDir, path)
@@ -47,7 +58,7 @@ class Server(private val config: Config) extends Runnable {
               ContentType(mimeType) ~>
                 ResponseBytes(fileBytes)
             } catch {
-              case _: MatchError if config.serve.allowUnsupportedMediaTypes() =>
+              case _: MatchError if serveOptions.allowUnsupportedMediaTypes() =>
                 logResponse(Ok.code)
                 ResponseBytes(fileBytes)
               case _: MatchError =>
@@ -61,6 +72,8 @@ class Server(private val config: Config) extends Runnable {
         }
       case _ => MethodNotAllowed ~> ResponseString("Unknown request")
     }
-    unfiltered.jetty.Server.http(config.serve.port()).plan(hostedContent).run()
+
+    logger.info(s"Listening on port ${serveOptions.port()}")
+    unfiltered.jetty.Server.http(serveOptions.port()).plan(hostedContent).run()
   }
 }
