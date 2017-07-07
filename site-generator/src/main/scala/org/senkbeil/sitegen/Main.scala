@@ -22,10 +22,9 @@ object Main {
     if (config.usingGenerateCommand) {
       if (config.generate.isQuickExit) return
       new Generator(config).run()
-    }
 
     // Serve generated content
-    if (config.usingServeCommand) {
+    } else if (config.usingServeCommand) {
       if (config.serve.isQuickExit) return
       val rootPath = Paths.get(config.serve.inputDir())
 
@@ -62,7 +61,7 @@ object Main {
       new Publisher(config).run()
 
     // Print help info
-    } else if (!config.usingGenerateCommand) {
+    } else {
       config.printHelp()
     }
   }
