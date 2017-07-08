@@ -9,6 +9,8 @@ import org.senkbeil.sitegen.layouts.Context
 import org.senkbeil.sitegen.structures.{MenuItem, Page}
 import org.senkbeil.sitegen.utils.FileHelper
 
+import scala.util.Try
+
 /**
  * Represents a generator of content based on a configuration.
  *
@@ -152,8 +154,10 @@ class Generator(
         menuItem.copy(selected = isSelected)
       })
 
+      // TODO: Is it necessary to wrap metadata access in Try? Will it fail?
       page.render(context.copy(
         title = Some(page.title),
+        metadata = Try(page.metadata).toOption,
         mainMenuItems = markedMainMenuItems,
         sideMenuItems = markedSideMenuItems
       ))

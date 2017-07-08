@@ -11,7 +11,8 @@ object Main {
   private lazy val logger = new Logger(this.getClass)
 
   def main(args: Array[String]): Unit = {
-    val config = new Config(args)
+    val configManager = new ConfigManager
+    val config = configManager.loadFullConfig(args)
     if (config.isQuickExit) return // Hack to get around sys.exit(...)
 
     // Set global logger used throughout program
