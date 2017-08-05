@@ -2,13 +2,14 @@ package org.senkbeil.sitegen
 
 import java.io.File
 
-import scala.io.Source
-
 import ConfigManager._
+import com.moandjiezana.toml.Toml
+
+import scala.util.{Failure, Success, Try}
 
 object ConfigManager {
-  /** Represents extension of config file (minus the .) */
-  lazy val DefaultConfigFileExt: String = "config"
+  /** Represents the generic config file for the site. */
+  lazy val DefaultConfigFileName: String = "sitegen.toml"
 }
 
 /**
@@ -35,10 +36,10 @@ class ConfigManager {
   ): Config = {
     val argsConfig = loadConfigFromArgs(args)
     val subcommandName = argsConfig.builder.getSubcommandName
-    val fileConfig = Option(configFileName).orElse(
-      subcommandName.map(_ + s".$DefaultConfigFileExt")
-    ).map(fileName => new File(fileName)).flatMap(f =>
-      loadConfigFromFile(f, subcommandName.toSeq)
+
+    val fileName = Option(configFileName).getOrElse(DefaultConfigFileName)
+    val fileConfig = subcommandName.flatMap(
+      loadConfigFromFile(new File(fileName), _: String)
     )
 
     // Find args including and after subcommand name
@@ -77,21 +78,48 @@ class ConfigManager {
    * Loads a configuration from a file.
    *
    * @param file The file to use as the configuration
-   * @param prefix Any arguments to prefix in front of loaded args
+   * @param category The category within the configuration file to load
    *
-   * @return Some configuration if the file exists, otherwise None
+   * @return Some configuration if the file and category exist, otherwise None
    */
   private def loadConfigFromFile(
     file: File,
-    prefix: Seq[String] = Nil
+    category: String
   ): Option[Config] = {
     logger.trace(s"Checking if config file exists: ${file.getName}")
-    if (file.isFile && file.exists()) {
-      logger.info(s"Loading configuration from ${file.getName}")
-      val args = Source.fromFile(file)
-        .getLines.toList
-        .flatMap(_.split(" ").filter(_.nonEmpty))
-      Some(new Config(prefix ++ args))
-    } else None
+    val f = if (file.isFile && file.exists()) Some(file) else None
+
+    logger.info(s"Loading configuration from ${file.getName}")
+    val toml = f.flatMap(f => {
+      val t = Try((new Toml).read(f))
+      t.failed.foreach(logger.error("Config load error", _: Throwable))
+      t.toOption
+    })
+
+    val tomlSection = toml.flatMap(t => Option(t.getTable(category)))
+    if (tomlSection.isEmpty) logger.error(s"Missing '$category' in config!")
+
+    // NOTE: Currently, we just convert all keys to command line arguments.
+    //       Is there a better way?
+    tomlSection.map(t => {
+      import scala.collection.JavaConverters._
+      val args = category +: t.toMap.asScala.map { case (key, value) =>
+        // NOTE: We are assuming CLI arguments are only in blah-blah form,
+        //       so converting any underscores to hyphens to work with CLI
+        val kstr = key.replace('_', '-')
+        val vstr = value match {
+          case a: Array[_] => a.mkString(",")
+          case v => v.toString
+        }
+
+        Try(vstr.toBoolean) match {
+          case Success(v) if v  => s"--$kstr"
+          case Success(v)       => ""
+          case Failure(_)       => s"--$kstr=$vstr"
+        }
+      }.toSeq.filter(_.nonEmpty)
+
+      new Config(args)
+    })
   }
 }

@@ -116,8 +116,22 @@ object Config {
   /** Mixin to prevent sys.exit(0) when printing help/version info. */
   trait PreventConfigExit extends ScallopConfBase {
     private var quickExit: Boolean = false
+    private var errorExit: Boolean = false
+
+    // Override message handler to not system exit on error
+    errorMessageHandler = { message =>
+      if (overrideColorOutput.value.getOrElse(System.console() != null)) {
+        Console.err.println(
+          "[\u001b[31m%s\u001b[0m] Error: %s".format(printedName, message)
+        )
+      } else {
+        // no colors on output
+        Console.err.println("[%s] Error: %s" format (printedName, message))
+      }
+    }
 
     def isQuickExit: Boolean = quickExit
+    def isErrorExit: Boolean = errorExit
 
     override protected def onError(e: Throwable): Unit = e match {
       case r: ScallopResult if !throwError.value => r match {
@@ -130,7 +144,9 @@ object Config {
         case Version =>
           builder.vers.foreach(println)
           quickExit = true
-        case ScallopException(message) => errorMessageHandler(message)
+        case ScallopException(message) =>
+          errorMessageHandler(message)
+          errorExit = true
       }
       case e: Throwable => throw e
     }

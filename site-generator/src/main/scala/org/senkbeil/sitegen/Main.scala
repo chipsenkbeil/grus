@@ -13,7 +13,9 @@ object Main {
   def main(args: Array[String]): Unit = {
     val configManager = new ConfigManager
     val config = configManager.loadFullConfig(args)
-    if (config.isQuickExit) return // Hack to get around sys.exit(...)
+
+    // Hack to get around sys.exit(...)
+    if (config.isQuickExit || config.isErrorExit) return
 
     // Set global logger used throughout program
     import Config.Implicits._ // For logLevel()
@@ -21,12 +23,12 @@ object Main {
 
     // Generate before other actions if indicated
     if (config.usingGenerateCommand) {
-      if (config.generate.isQuickExit) return
+      if (config.generate.isQuickExit || config.generate.isErrorExit) return
       new Generator(config).run()
 
     // Serve generated content
     } else if (config.usingServeCommand) {
-      if (config.serve.isQuickExit) return
+      if (config.serve.isQuickExit || config.serve.isErrorExit) return
       val rootPath = Paths.get(config.serve.inputDir())
 
       val watcherThread = if (config.serve.liveReload()) {
@@ -58,7 +60,7 @@ object Main {
 
     // Publish generated content
     } else if (config.usingPublishCommand) {
-      if (config.publish.isQuickExit) return
+      if (config.publish.isQuickExit || config.publish.isErrorExit) return
       new Publisher(config).run()
 
     // Print help info

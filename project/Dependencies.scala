@@ -21,6 +21,8 @@ object Dependencies {
       "com.vladsch.flexmark" % "flexmark-ext-abbreviation" % "0.20.0", // Abbreviation support
       "com.vladsch.flexmark" % "flexmark-ext-anchorlink" % "0.20.0", // Anchor link support
 
+      "com.moandjiezana.toml" % "toml4j" % "0.7.1", // TOML support
+
       "org.eclipse.jgit" % "org.eclipse.jgit" % "4.8.0.201706111038-r", // Git support
 
       "commons-codec" % "commons-codec" % "1.10", // Base64 encoding support
