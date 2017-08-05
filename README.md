@@ -7,7 +7,7 @@ Flexmark for markdown.
 To use in sbt (0.13.x) to generate your own content, add the following plugin:
 
 ```scala
-addSbtPlugin("org.senkbeil" %% "sbt-site-generator" % "0.1.0")
+addSbtPlugin("org.senkbeil" %% "sbt-site-generator" % "0.1.1")
 ```
 
 - `sbt generateSite` will generate the website and put the contents in an
@@ -19,16 +19,12 @@ addSbtPlugin("org.senkbeil" %% "sbt-site-generator" % "0.1.0")
 You can add `--help` to any of the above commands to display help information
 for the specific command. E.g. `sbt "generateSite --help"`.
 
-_NOTE: There is a bug with the 0.1.0 release where displaying the help message
-does not stop the program from perform the associated action.
-E.g. `sbt "generateSite --help"` will also generate the website._
-
 ## Building a Theme
 
 To use the API to create a custom theme, add the following dependency:
 
 ```scala
-libraryDependencies += "org.senkbeil" %% "site-generator" % "0.1.0"
+libraryDependencies += "org.senkbeil" %% "site-generator" % "0.1.1"
 ```
 
 ## Examples
