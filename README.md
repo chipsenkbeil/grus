@@ -1,10 +1,43 @@
 # scala-site-generator
-Static site generator written in Scala using Scalatags for templates and Flexmark for markdown.
+Static site generator written in Scala using Scalatags for templates and
+Flexmark for markdown.
+
+## Running
+
+To use in sbt (0.13.x) to generate your own content, add the following plugin:
+
+```scala
+addSbtPlugin("org.senkbeil" %% "sbt-site-generator" % "0.1.0")
+```
+
+- `sbt generateSite` will generate the website and put the contents in an
+  output directory
+- `sbt serveSite` will generate the website and start a server to display
+  it locally
+- `sbt publishSite` will publish the contents output from `generateSite`
+
+You can add `--help` to any of the above commands to display help information
+for the specific command. E.g. `sbt "generateSite --help"`.
+
+_NOTE: There is a bug with the 0.1.0 release where displaying the help message
+does not stop the program from perform the associated action.
+E.g. `sbt "generateSite --help"` will also generate the website._
+
+## Building a Theme
+
+To use the API to create a custom theme, add the following dependency:
+
+```scala
+libraryDependencies += "org.senkbeil" %% "site-generator" % "0.1.0"
+```
 
 ## Examples
 
-Loading from directory of class files:
+See the
+[Scala Debugger docs module](https://github.com/ensime/scala-debugger/tree/master/scala-debugger-docs)
+for an example of how to write a custom theme.
 
-```
-java -jar ~/projects/scala-site-generator/site-generator/target/scala-2.10/site-generator-assembly-0.1.0.jar generate --class-dir-theme=scala-debugger-docs/target/scala-2.10/classes/
-```
+See the
+[Scala Debugger sitegen.toml](https://github.com/ensime/scala-debugger/tree/master/sitegen.toml)
+for an example of how to write a config file to fill in values.
+
