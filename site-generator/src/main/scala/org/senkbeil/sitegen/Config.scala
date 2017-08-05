@@ -130,8 +130,12 @@ object Config {
       }
     }
 
-    def isQuickExit: Boolean = quickExit
-    def isErrorExit: Boolean = errorExit
+    /** Returns whether or not an exit should occur. */
+    def shouldExit: Boolean = {
+      quickExit || errorExit || (isRootConfig && subcommands.collect {
+        case c: PreventConfigExit => c
+      }.exists(_.shouldExit))
+    }
 
     override protected def onError(e: Throwable): Unit = e match {
       case r: ScallopResult if !throwError.value => r match {

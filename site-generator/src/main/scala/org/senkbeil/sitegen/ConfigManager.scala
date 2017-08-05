@@ -35,6 +35,10 @@ class ConfigManager {
     configFileName: String = null
   ): Config = {
     val argsConfig = loadConfigFromArgs(args)
+
+    // If indicated to exit early, do so
+    if (argsConfig.shouldExit) return argsConfig
+
     val subcommandName = argsConfig.builder.getSubcommandName
 
     val fileName = Option(configFileName).getOrElse(DefaultConfigFileName)

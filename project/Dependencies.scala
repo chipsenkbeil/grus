@@ -15,11 +15,11 @@ object Dependencies {
       "com.lihaoyi" %% "scalatags" % "0.6.3", // Main doc generator
       "org.rogach" %% "scallop" % "3.0.3", // CLI Support
 
-      "com.vladsch.flexmark" % "flexmark-java" % "0.20.0", // Markdown support
-      "com.vladsch.flexmark" % "flexmark-ext-yaml-front-matter" % "0.20.0", // Front matter support
-      "com.vladsch.flexmark" % "flexmark-ext-tables" % "0.20.0", // Tables support
-      "com.vladsch.flexmark" % "flexmark-ext-abbreviation" % "0.20.0", // Abbreviation support
-      "com.vladsch.flexmark" % "flexmark-ext-anchorlink" % "0.20.0", // Anchor link support
+      "com.vladsch.flexmark" % "flexmark-java" % "0.22.22", // Markdown support
+      "com.vladsch.flexmark" % "flexmark-ext-yaml-front-matter" % "0.22.22", // Front matter support
+      "com.vladsch.flexmark" % "flexmark-ext-tables" % "0.22.22", // Tables support
+      "com.vladsch.flexmark" % "flexmark-ext-abbreviation" % "0.22.22", // Abbreviation support
+      "com.vladsch.flexmark" % "flexmark-ext-anchorlink" % "0.22.22", // Anchor link support
 
       "com.moandjiezana.toml" % "toml4j" % "0.7.1", // TOML support
 
@@ -29,8 +29,8 @@ object Dependencies {
       "commons-io" % "commons-io" % "2.5", // File copy support
 
       // For downloading themes via Maven
-      "io.get-coursier" %% "coursier" % "1.0.0-RC6",
-      "io.get-coursier" %% "coursier-cache" % "1.0.0-RC6",
+      "io.get-coursier" %% "coursier" % "1.0.0-RC8",
+      "io.get-coursier" %% "coursier-cache" % "1.0.0-RC8",
 
       // For hosting local server containing generated sources
       "ws.unfiltered" %% "unfiltered" % unfilteredVersion.value,
