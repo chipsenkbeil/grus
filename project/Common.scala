@@ -8,10 +8,8 @@ object Common {
     "Sets scaling factor of running tests that are wrapped in scale(...)"
   )
 
-  lazy val Name: String = "sitegen"
-
   def settings: Seq[Setting[_]] = Seq(
-    version := "0.1.2",
+    version := "0.1.0",
 
     organization := "org.senkbeil",
 
@@ -20,7 +18,7 @@ object Common {
       url("https://www.apache.org/licenses/LICENSE-2.0.html")
     ),
 
-    homepage := Some(url("https://scala-site.senkbeil.org")),
+    homepage := Some(url("https://grus.senkbeil.org")),
 
     // Default version when not cross-compiling
     scalaVersion := "2.10.6",
@@ -120,8 +118,8 @@ object Common {
 
     pomExtra :=
       <scm>
-        <url>git@github.com:chipsenkbeil/scala-site-generator.git</url>
-        <connection>scm:git:git@github.com:chipsenkbeil/scala-site-generator.git</connection>
+        <url>git@github.com:chipsenkbeil/grus.git</url>
+        <connection>scm:git:git@github.com:chipsenkbeil/grus.git</connection>
       </scm>
         <developers>
           <developer>

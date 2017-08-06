@@ -1,4 +1,4 @@
-# site-generator
+# grus
 Static site generator written in Scala using Scalatags for templates and
 Flexmark for markdown.
 
@@ -7,14 +7,14 @@ Flexmark for markdown.
 To use in sbt (0.13.x) to generate your own content, add the following plugin:
 
 ```scala
-addSbtPlugin("org.senkbeil" %% "sbt-site-generator" % "0.1.2")
+addSbtPlugin("org.senkbeil" %% "sbt-grus" % "0.1.2")
 ```
 
-- `sbt generateSite` will generate the website and put the contents in an
+- `sbt grusGenerate` will generate the website and put the contents in an
   output directory
-- `sbt serveSite` will generate the website and start a server to display
+- `sbt grusServe` will generate the website and start a server to display
   it locally
-- `sbt publishSite` will publish the contents output from `generateSite`
+- `sbt grusPublish` will publish the contents output from `generateSite`
 
 You can add `--help` to any of the above commands to display help information
 for the specific command. E.g. `sbt "generateSite --help"`.
@@ -24,7 +24,7 @@ for the specific command. E.g. `sbt "generateSite --help"`.
 To use the API to create a custom theme, add the following dependency:
 
 ```scala
-libraryDependencies += "org.senkbeil" %% "site-generator-layouts" % "0.1.2"
+libraryDependencies += "org.senkbeil" %% "grus-layouts" % "0.1.2"
 ```
 
 ## Examples
@@ -34,6 +34,6 @@ See the
 for an example of how to write a custom theme.
 
 See the
-[Scala Debugger sitegen.toml](https://github.com/ensime/scala-debugger/tree/master/sitegen.toml)
+[Scala Debugger grus.toml](https://github.com/ensime/scala-debugger/tree/master/grus.toml)
 for an example of how to write a config file to fill in values.
 
