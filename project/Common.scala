@@ -8,8 +8,10 @@ object Common {
     "Sets scaling factor of running tests that are wrapped in scale(...)"
   )
 
+  lazy val Name: String = "sitegen"
+
   def settings: Seq[Setting[_]] = Seq(
-    version := "0.1.1",
+    version := "0.1.2",
 
     organization := "org.senkbeil",
 

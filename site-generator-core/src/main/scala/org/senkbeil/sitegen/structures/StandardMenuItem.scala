@@ -1,14 +1,12 @@
 package org.senkbeil.sitegen.structures
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Path, Paths}
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.{FalseFileFilter, TrueFileFilter}
 import org.senkbeil.sitegen.Config.CommandGenerateOptions
-import org.senkbeil.sitegen.{Config, ThemeManager}
+import org.senkbeil.sitegen.ThemeManager
 import org.senkbeil.sitegen.utils.FileHelper
-
-import scala.annotation.tailrec
 
 /**
  * Represents a generic menu item.
@@ -27,7 +25,7 @@ import scala.annotation.tailrec
  *             child page if representing a directory or the actual page if
  *             representing a normal page
  */
-case class MenuItem private (
+case class StandardMenuItem private (
   name: String,
   link: Option[String] = None,
   children: Seq[MenuItem] = Nil,
@@ -35,37 +33,9 @@ case class MenuItem private (
   weight: Double = MenuItem.DefaultWeight,
   fake: Boolean = false,
   page: Option[Page] = None
-) {
-  /**
-   * Indicates whether or not the menu item represents the specified page.
-   *
-   * @param page The page to compare to the menu item
-   * @return True if the menu item represents the page, otherwise false
-   */
-  def representsPage(page: Page): Boolean = this.page.exists(_ == page)
+) extends MenuItem
 
-  /**
-   * Indicates whether or not this menu item or any of its children (or one of
-   * its their children, recursive) is selected.
-   *
-   * @return True if this menu item or any child of this menu item or any one
-   *         of their children (recursive) is selected, otherwise false
-   */
-  def isDirectlyOrIndirectlySelected: Boolean = {
-    @tailrec def checkIsSelected(menuItems: MenuItem*): Boolean = {
-      if (menuItems.isEmpty) false
-      else if (menuItems.exists(_.selected)) true
-      else checkIsSelected(menuItems.flatMap(_.children): _*)
-    }
-
-    checkIsSelected(this)
-  }
-}
-
-object MenuItem {
-  /** Represents the default weight of menu items. */
-  val DefaultWeight: Double = 0
-
+object StandardMenuItem {
   /**
    * Generates a collection of menu items from the given path by searching
    * for markdown files and using them as the basis of children menu items.
@@ -84,7 +54,7 @@ object MenuItem {
     themeManager: ThemeManager,
     path: Path,
     dirUseFirstChild: Boolean = false
-  ): Seq[MenuItem] = {
+  ): Seq[StandardMenuItem] = {
     val mdFiles = FileHelper.markdownFiles(path)
 
     // Find all directories of src dir
@@ -131,7 +101,7 @@ object MenuItem {
     path: Path,
     candidateChildren: Seq[Path],
     dirUseFirstChild: Boolean
-  ): MenuItem = {
+  ): StandardMenuItem = {
     val children = candidateChildren.filter(_.getParent == path).map(p =>
       createLinkedMenuItem(generateOptions, themeManager, p,
         candidateChildren, dirUseFirstChild)
@@ -147,13 +117,13 @@ object MenuItem {
     val fakeChildLink = fakeChild.flatMap(_.link).filterNot(_ == "index")
     val normalChildren = children.filterNot(_.fake)
 
-    val page = Page.newInstance(generateOptions, themeManager, path)
+    val page = StandardPage.newInstance(generateOptions, themeManager, path)
     val isDir = page.isDirectory
     val isFake = !isDir && page.metadata.fake
 
     // Directories don't have metadata, so use default
     val weight = fakeChild.map(_.weight).getOrElse(
-      if (isDir) DefaultWeight else page.metadata.weight
+      if (isDir) MenuItem.DefaultWeight else page.metadata.weight
     )
 
     // Directories don't have metadata, so cannot use title
@@ -178,7 +148,7 @@ object MenuItem {
       else
         Some(page.metadata.link.getOrElse(page.absoluteLink))
 
-    MenuItem(
+    StandardMenuItem(
       name = name,
       link = link,
       children = normalChildren,

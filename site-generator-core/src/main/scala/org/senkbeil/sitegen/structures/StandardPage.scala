@@ -26,12 +26,12 @@ import scala.util.Try
  * @param path The path to the raw page content
  * @param logger The logger to use with the page
  */
-class Page private (
+class StandardPage private (
   val generateOptions: CommandGenerateOptions,
   val themeManager: ThemeManager,
   val path: Path,
   private val logger: Logger
-) {
+) extends Page {
   /**
    * Compares this page with another page. Two pages are equal if they have
    * the same path.
@@ -92,13 +92,6 @@ class Page private (
     ).replaceAll("[^\\w\\s\\d]", " ")
     .toLowerCase.split(' ').map(_.capitalize).mkString(" ")
   }
-
-  /**
-   * Returns whether or not the page is using the default layout.
-   *
-   * @return True if using the default layout, otherwise false
-   */
-  def isUsingDefaultLayout: Boolean = metadata.usingDefaultLayout
 
   /**
    * Renders the page and writes it to the output path.
@@ -209,7 +202,7 @@ class Page private (
     val layout = newLayoutInstance(context)
 
     logger.trace(s"Rendering markdown as html")
-    val content = Page.renderer.render(pageNode)
+    val content = StandardPage.renderer.render(pageNode)
 
     logger.trace(s"Applying layout ${layout.getClass.getName}")
     layout.toString(content)
@@ -281,7 +274,7 @@ class Page private (
    */
   private def parseMarkdownFile(path: Path): Node = {
     logger.trace(s"Parsing markdown file")
-    Page.parser.parseReader(
+    StandardPage.parser.parseReader(
       Files.newBufferedReader(path, Charset.forName("UTF-8"))
     )
   }
@@ -292,11 +285,11 @@ class Page private (
    * @param node The flexmark node whose metadata to parse
    * @return The metadata instance
    */
-  private def parseMetadata(node: Node): Metadata = {
+  private def parseMetadata(node: Node): StandardMetadata = {
     logger.trace(s"Extracting front matter from markdown file")
     val yamlVisitor = new AbstractYamlFrontMatterVisitor
     yamlVisitor.visit(node)
-    Metadata.fromJavaMap(generateOptions, yamlVisitor.getData)
+    StandardMetadata.fromJavaMap(generateOptions, yamlVisitor.getData)
   }
 
   /**
@@ -315,7 +308,7 @@ class Page private (
   }
 }
 
-object Page {
+object StandardPage {
   import scala.collection.JavaConverters._
 
   /** Represents extensions for the parser and renderer. */
@@ -352,7 +345,7 @@ object Page {
       generateOptions: CommandGenerateOptions,
       themeManager: ThemeManager,
       path: Path
-    ): Page = new Page(
+    ): StandardPage = new StandardPage(
       generateOptions,
       themeManager,
       path,
@@ -360,38 +353,6 @@ object Page {
         .newSession(path.toString)
         .init(Logger.Level.Verbose)
     )
-  }
-
-  /**
-   * Represents a redirection page.
-   */
-  object Redirect {
-    import scalatags.Text.all._
-
-    /**
-     * Generates a redirect page using the provided url.
-     *
-     * @param url The url that the page should redirect to
-     * @return The page content
-     */
-    def apply(url: String): Modifier = {
-      val q = "\""
-      html(lang := "en-US")(
-        head(
-          meta(charset := "UTF-8"),
-          meta(httpEquiv := "refresh", content := s"1; url=$url"),
-          script(`type` := "text/javascript")(
-            s"window.location.href = $q$url$q;"
-          ),
-          tag("title")("Page Redirection")
-        ),
-        body(
-          raw("If you are not redirected automatically, "),
-          a(href := url)("follow this link"),
-          raw(".")
-        )
-      )
-    }
   }
 
   /**
@@ -406,5 +367,10 @@ object Page {
     generateOptions: CommandGenerateOptions,
     themeManager: ThemeManager,
     path: Path
-  ): Page = new Page(generateOptions, themeManager, path, Logger.Silent)
+  ): StandardPage = new StandardPage(
+    generateOptions,
+    themeManager,
+    path,
+    Logger.Silent
+  )
 }

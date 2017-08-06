@@ -10,26 +10,47 @@ lazy val root = project
     publishArtifact := false,
     publishLocal := {}
   ).aggregate(
-    siteGenerator,
+    siteGeneratorCore,
+    siteGeneratorLayouts,
     sbtPlugin
   ).enablePlugins(CrossPerProjectPlugin)
 
 //
 // SITE GENERATOR PROJECT CONFIGURATION
 //
-lazy val siteGenerator = project
-  .in(file("site-generator"))
+lazy val siteGeneratorCore = project
+  .in(file("site-generator-core"))
   .configs(IntegrationTest)
   .settings(Common.settings: _*)
   .settings(Defaults.itSettings: _*)
-  .settings(Dependencies.settings: _*)
+  .settings(Core.settings: _*)
   .enablePlugins(
     BuildInfoPlugin,
     CrossPerProjectPlugin
   ).settings(
-    name := "site-generator",
+    name := "site-generator-core",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "org.senkbeil.sitegen"
+  ).dependsOn(
+    siteGeneratorLayouts % "compile->compile;test->compile;it->compile"
+  )
+
+//
+// SITE GENERATOR LAYOUTS PROJECT CONFIGURATION
+//
+lazy val siteGeneratorLayouts = project
+  .in(file("site-generator-layouts"))
+  .configs(IntegrationTest)
+  .settings(Common.settings: _*)
+  .settings(Defaults.itSettings: _*)
+  .settings(Layouts.settings: _*)
+  .enablePlugins(
+    BuildInfoPlugin,
+    CrossPerProjectPlugin
+  ).settings(
+    name := "site-generator-layouts",
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "org.senkbeil.sitegen.layouts"
   )
 
 //
@@ -48,5 +69,5 @@ lazy val sbtPlugin = project
     name := "sbt-site-generator",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "org.senkbeil.sitegen.sbt"
-  ).dependsOn(siteGenerator)
+  ).dependsOn(siteGeneratorCore)
 
