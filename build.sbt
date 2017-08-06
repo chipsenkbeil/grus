@@ -10,16 +10,16 @@ lazy val root = project
     publishArtifact := false,
     publishLocal := {}
   ).aggregate(
-    siteGeneratorCore,
-    siteGeneratorLayouts,
+    grusCore,
+    grusLayouts,
     sbtPlugin
   ).enablePlugins(CrossPerProjectPlugin)
 
 //
 // SITE GENERATOR PROJECT CONFIGURATION
 //
-lazy val siteGeneratorCore = project
-  .in(file("site-generator-core"))
+lazy val grusCore = project
+  .in(file("grus-core"))
   .configs(IntegrationTest)
   .settings(Common.settings: _*)
   .settings(Defaults.itSettings: _*)
@@ -28,18 +28,18 @@ lazy val siteGeneratorCore = project
     BuildInfoPlugin,
     CrossPerProjectPlugin
   ).settings(
-    name := "site-generator-core",
+    name := "grus-core",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.sitegen"
+    buildInfoPackage := "org.senkbeil.grus"
   ).dependsOn(
-    siteGeneratorLayouts % "compile->compile;test->compile;it->compile"
+    grusLayouts % "compile->compile;test->compile;it->compile"
   )
 
 //
 // SITE GENERATOR LAYOUTS PROJECT CONFIGURATION
 //
-lazy val siteGeneratorLayouts = project
-  .in(file("site-generator-layouts"))
+lazy val grusLayouts = project
+  .in(file("grus-layouts"))
   .configs(IntegrationTest)
   .settings(Common.settings: _*)
   .settings(Defaults.itSettings: _*)
@@ -48,9 +48,9 @@ lazy val siteGeneratorLayouts = project
     BuildInfoPlugin,
     CrossPerProjectPlugin
   ).settings(
-    name := "site-generator-layouts",
+    name := "grus-layouts",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.sitegen.layouts"
+    buildInfoPackage := "org.senkbeil.grus.layouts"
   )
 
 //
@@ -66,8 +66,8 @@ lazy val sbtPlugin = project
     BuildInfoPlugin,
     CrossPerProjectPlugin
   ).settings(
-    name := "sbt-site-generator",
+    name := "sbt-grus",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.sitegen.sbt"
-  ).dependsOn(siteGeneratorCore)
+    buildInfoPackage := "org.senkbeil.grus.sbt"
+  ).dependsOn(grusCore)
 
