@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 
-import org.senkbeil.sitegen.BuildInfo
-
 import scalatags.Text.all._
 
 /**

@@ -1,44 +1,53 @@
-import sbt.Keys._
 import sbt._
 
 object Dependencies {
-  lazy val unfilteredVersion: SettingKey[String] = settingKey[String](
-    "Version of Unfiltered used in projects"
+  lazy val ScalaTags = Seq(
+    "com.lihaoyi" %% "scalatags" % "0.6.3" // Main doc generator
   )
 
-  /** Dependency-specific project settings. */
-  val settings = Seq(
-    // Contains the version of unfiltered used
-    unfilteredVersion := "0.9.1",
+  lazy val Scallop = Seq(
+    "org.rogach" %% "scallop" % "3.0.3" // CLI Support
+  )
 
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "scalatags" % "0.6.3", // Main doc generator
-      "org.rogach" %% "scallop" % "3.0.3", // CLI Support
+  lazy val Flexmark = Seq(
+    "com.vladsch.flexmark" % "flexmark" % "0.22.22", // Markdown support
+    "com.vladsch.flexmark" % "flexmark-ext-yaml-front-matter" % "0.22.22", // Front matter support
+    "com.vladsch.flexmark" % "flexmark-ext-tables" % "0.22.22", // Tables support
+    "com.vladsch.flexmark" % "flexmark-ext-abbreviation" % "0.22.22", // Abbreviation support
+    "com.vladsch.flexmark" % "flexmark-ext-anchorlink" % "0.22.22" // Anchor link support
+  )
 
-      "com.vladsch.flexmark" % "flexmark-java" % "0.22.22", // Markdown support
-      "com.vladsch.flexmark" % "flexmark-ext-yaml-front-matter" % "0.22.22", // Front matter support
-      "com.vladsch.flexmark" % "flexmark-ext-tables" % "0.22.22", // Tables support
-      "com.vladsch.flexmark" % "flexmark-ext-abbreviation" % "0.22.22", // Abbreviation support
-      "com.vladsch.flexmark" % "flexmark-ext-anchorlink" % "0.22.22", // Anchor link support
+  lazy val Toml4j = Seq(
+    "com.moandjiezana.toml" % "toml4j" % "0.7.1" // TOML support
+  )
 
-      "com.moandjiezana.toml" % "toml4j" % "0.7.1", // TOML support
+  lazy val Jgit = Seq(
+    "org.eclipse.jgit" % "org.eclipse.jgit" % "4.8.0.201706111038-r" // Git support
+  )
 
-      "org.eclipse.jgit" % "org.eclipse.jgit" % "4.8.0.201706111038-r", // Git support
+  lazy val CommonsCodec = Seq(
+    "commons-codec" % "commons-codec" % "1.10" // Base64 encoding support
+  )
 
-      "commons-codec" % "commons-codec" % "1.10", // Base64 encoding support
-      "commons-io" % "commons-io" % "2.5", // File copy support
+  lazy val CommonsIO = Seq(
+    "commons-io" % "commons-io" % "2.5" // File copy support
+  )
 
-      // For downloading themes via Maven
-      "io.get-coursier" %% "coursier" % "1.0.0-RC8",
-      "io.get-coursier" %% "coursier-cache" % "1.0.0-RC8",
+  lazy val Coursier = Seq(
+    // For downloading themes via Maven
+    "io.get-coursier" %% "coursier" % "1.0.0-RC8",
+    "io.get-coursier" %% "coursier-cache" % "1.0.0-RC8"
+  )
 
-      // For hosting local server containing generated sources
-      "ws.unfiltered" %% "unfiltered" % unfilteredVersion.value,
-      "ws.unfiltered" %% "unfiltered-filter" % unfilteredVersion.value,
-      "ws.unfiltered" %% "unfiltered-jetty" % unfilteredVersion.value,
+  lazy val Unfiltered = Seq(
+    // For hosting local server containing generated sources
+    "ws.unfiltered" %% "unfiltered" % "0.9.1",
+    "ws.unfiltered" %% "unfiltered-filter" % "0.9.1",
+    "ws.unfiltered" %% "unfiltered-jetty" % "0.9.1"
+  )
 
-      // For logging used with jetty from unfiltered
-      "org.slf4j" % "slf4j-log4j12" % "1.7.5"
-    )
+  lazy val Slf4j = Seq(
+    // For logging used with jetty from unfiltered
+    "org.slf4j" % "slf4j-log4j12" % "1.7.5"
   )
 }

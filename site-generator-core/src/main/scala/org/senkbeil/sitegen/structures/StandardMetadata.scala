@@ -24,7 +24,7 @@ import scala.util.Try
  * @param other All other metadata properties that were provided that
  *              do not match reserved properties
  */
-case class Metadata(
+case class StandardMetadata(
   layout: String,
   usingDefaultLayout: Boolean,
   weight: Double,
@@ -34,15 +34,9 @@ case class Metadata(
   redirect: Option[String],
   fake: Boolean,
   other: Map[String, Seq[String]]
-)
+) extends Metadata
 
-object Metadata {
-  /**
-   * Represents the property names reserved for use in the metadata.
-   */
-  lazy val reservedKeys: Seq[String] =
-    classOf[Metadata].getDeclaredFields.map(_.getName).filterNot(_ == "other")
-
+object StandardMetadata {
   /**
    * Converts a map of keys and associated values into a metadata construct.
    *
@@ -53,7 +47,7 @@ object Metadata {
   def fromMap(
     generateOptions: CommandGenerateOptions,
     data: Map[String, Seq[String]]
-  ): Metadata = {
+  ): StandardMetadata = {
     val title = data.get("title").flatMap(_.headOption)
     val link = data.get("link").flatMap(_.headOption)
     val redirect = data.get("redirect").flatMap(_.headOption)
@@ -65,7 +59,7 @@ object Metadata {
     val fake = data.get("fake").flatMap(_.headOption)
       .flatMap(r => Try(r.toBoolean).toOption)
 
-    Metadata(
+    StandardMetadata(
       layout = layout.getOrElse(generateOptions.defaultPageLayout()),
       usingDefaultLayout = layout.isEmpty,
       weight = weight.getOrElse(generateOptions.defaultPageWeight()),
@@ -74,7 +68,7 @@ object Metadata {
       link = link,
       redirect = redirect,
       fake = fake.getOrElse(generateOptions.defaultPageFake()),
-      other = data.filterKeys(k => !reservedKeys.contains(k))
+      other = data.filterKeys(k => !Metadata.reservedKeys.contains(k))
     )
   }
 
@@ -89,7 +83,7 @@ object Metadata {
   def fromJavaMap(
     generateOptions: CommandGenerateOptions,
     data: java.util.Map[String, java.util.List[String]]
-  ): Metadata = {
+  ): StandardMetadata = {
     import scala.collection.JavaConverters._
 
     val scalaData = data.asScala.mapValues(_.asScala.toSeq).toMap

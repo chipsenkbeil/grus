@@ -6,7 +6,7 @@ import java.nio.file._
 import org.apache.commons.io.FileUtils
 import org.senkbeil.sitegen.Config.CommandGenerateOptions
 import org.senkbeil.sitegen.layouts.Context
-import org.senkbeil.sitegen.structures.{MenuItem, Page}
+import org.senkbeil.sitegen.structures.{MenuItem, Page, StandardMenuItem, StandardPage}
 import org.senkbeil.sitegen.utils.FileHelper
 
 import scala.util.Try
@@ -113,13 +113,13 @@ class Generator(
     val srcDirPath = Paths.get(inputDir, srcDir)
     logger.trace(s"Processing markdown files from $srcDirPath")
 
-    val linkedMainMenuItems = MenuItem.fromPath(
+    val linkedMainMenuItems = StandardMenuItem.fromPath(
       generateOptions,
       themeManager,
       srcDirPath,
       dirUseFirstChild = true
     ).map(_.copy(children = Nil))
-    val linkedSideMenuItems = MenuItem.fromPath(
+    val linkedSideMenuItems = StandardMenuItem.fromPath(
       generateOptions,
       themeManager,
       srcDirPath
@@ -134,25 +134,27 @@ class Generator(
     // For each markdown file, generate its content and produce a file
     val mdFiles = FileHelper.markdownFiles(srcDirPath)
     val pages = mdFiles.map(f =>
-      Page.Session.newInstance(generateOptions, themeManager, f)
+      StandardPage.Session.newInstance(generateOptions, themeManager, f)
     ).toSeq
 
     pages.foreach(page => {
       @inline def markMenuItem(menuItems: Seq[MenuItem]): Seq[MenuItem] = {
-        menuItems.map(menuItem => {
-          menuItem.copy(
-            selected = menuItem.representsPage(page),
-            children = markMenuItem(menuItem.children)
-          )
-        })
+        menuItems.collect {
+          case menuItem: StandardMenuItem =>
+            menuItem.copy(
+              selected = menuItem.representsPage(page),
+              children = markMenuItem(menuItem.children)
+            )
+        }
       }
 
       val markedSideMenuItems = markMenuItem(context.sideMenuItems)
-      val markedMainMenuItems = context.mainMenuItems.map(menuItem => {
-        val matchingItem = markedSideMenuItems.find(_.name == menuItem.name)
-        val isSelected = matchingItem.exists(_.isDirectlyOrIndirectlySelected)
-        menuItem.copy(selected = isSelected)
-      })
+      val markedMainMenuItems = context.mainMenuItems.collect {
+        case menuItem: StandardMenuItem =>
+          val matchingItem = markedSideMenuItems.find(_.name == menuItem.name)
+          val isSelected = matchingItem.exists(_.isDirectlyOrIndirectlySelected)
+          menuItem.copy(selected = isSelected)
+      }
 
       // TODO: Is it necessary to wrap metadata access in Try? Will it fail?
       page.render(context.copy(
