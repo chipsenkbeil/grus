@@ -1,4 +1,6 @@
 # grus
+(G)enerate (R)esources (U)sing (S)cala
+
 Static site generator written in Scala using Scalatags for templates and
 Flexmark for markdown.
 
