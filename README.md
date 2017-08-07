@@ -16,10 +16,10 @@ addSbtPlugin("org.senkbeil" %% "sbt-grus" % "0.1.0")
   output directory
 - `sbt grusServe` will generate the website and start a server to display
   it locally
-- `sbt grusPublish` will publish the contents output from `generateSite`
+- `sbt grusPublish` will publish the contents output from `grusGenerate`
 
 You can add `--help` to any of the above commands to display help information
-for the specific command. E.g. `sbt "generateSite --help"`.
+for the specific command. E.g. `sbt "grusGenerate --help"`.
 
 ## Building a Theme
 
