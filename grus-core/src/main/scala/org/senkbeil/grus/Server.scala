@@ -15,7 +15,7 @@ import scala.util.Try
  */
 class Server(
   private val serveOptions: CommandServeOptions
-) extends Runnable {
+) extends Runnable { self =>
   /** Logger for this class. */
   private lazy val logger = new Logger(this.getClass)
 
@@ -26,6 +26,26 @@ class Server(
    * @return The new server instance
    */
   def this(config: Config) = this(config.serve)
+
+  /**
+   * Runs the server in a separate thread.
+   *
+   * @return The thread where the server is running
+   */
+  def runAsync(): Thread = {
+    val thread = new Thread(new Runnable {
+      override def run(): Unit = try {
+        self.run()
+      } catch {
+        case _: InterruptedException  => /* IGNORE */
+        case t: Throwable             => throw t
+      }
+    })
+
+    thread.start()
+
+    thread
+  }
 
   /**
    * Runs the server.

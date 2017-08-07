@@ -49,7 +49,11 @@ object Main {
         new Generator(config.serve).run()
       }
 
-      new Server(config).run()
+      // Run server in new thread
+      val serverThread = new Server(config).runAsync()
+
+      // Block while server is still running
+      serverThread.join()
 
       watcherThread.foreach(t => {
         logger.verbose("Shutting down watcher thread")
