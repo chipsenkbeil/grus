@@ -1,6 +1,8 @@
 # grus
 (G)enerate (R)esources (U)sing (S)cala
 
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/chipsenkbeil/grus)
+
 Static site generator written in Scala using Scalatags for templates and
 Flexmark for markdown.
 
