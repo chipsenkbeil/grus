@@ -18,7 +18,7 @@ object Common {
       url("https://www.apache.org/licenses/LICENSE-2.0.html")
     ),
 
-    homepage := Some(url("https://grus.senkbeil.org")),
+    homepage := Some(url("https://get-grus.io")),
 
     // Default version when not cross-compiling
     scalaVersion := "2.10.6",
