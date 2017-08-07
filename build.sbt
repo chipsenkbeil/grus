@@ -8,7 +8,8 @@ lazy val root = project
     name := "root",
     // Do not publish the aggregation project
     publishArtifact := false,
-    publishLocal := {}
+    publishLocal := {},
+    assembly := { null } // Stub out assembly on root
   ).aggregate(
     grusCore,
     grusLayouts,
@@ -30,7 +31,10 @@ lazy val grusCore = project
   ).settings(
     name := "grus-core",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.grus"
+    buildInfoPackage := "org.senkbeil.grus",
+    mainClass in assembly := Some("org.senkbeil.grus.Main"),
+    assemblyJarName in assembly := "grus.jar",
+    test in assembly := {}
   ).dependsOn(
     grusLayouts % "compile->compile;test->compile;it->compile"
   )
@@ -50,7 +54,8 @@ lazy val grusLayouts = project
   ).settings(
     name := "grus-layouts",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.grus.layouts"
+    buildInfoPackage := "org.senkbeil.grus.layouts",
+    assembly := { null } // Stub out assembly on layouts
   )
 
 //
@@ -68,6 +73,7 @@ lazy val sbtPlugin = project
   ).settings(
     name := "sbt-grus",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "org.senkbeil.grus.sbt"
+    buildInfoPackage := "org.senkbeil.grus.sbt",
+    assembly := { null } // Stub out assembly on sbt plugin
   ).dependsOn(grusCore)
 
