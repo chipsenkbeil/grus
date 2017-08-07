@@ -33,7 +33,11 @@ lazy val grusCore = project
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "org.senkbeil.grus",
     mainClass in assembly := Some("org.senkbeil.grus.Main"),
-    assemblyJarName in assembly := "grus.jar",
+    assemblyOutputPath in assembly :=
+      (baseDirectory in LocalRootProject).value /
+        "target" /
+        "assembly" /
+        s"grus-${version.value}-${scalaVersion.value}.jar",
     test in assembly := {}
   ).dependsOn(
     grusLayouts % "compile->compile;test->compile;it->compile"
