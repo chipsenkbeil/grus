@@ -6,6 +6,20 @@ Flexmark for markdown.
 
 ## Running
 
+### Via homebrew
+
+Install via the following:
+
+```
+brew install chipsenkbeil/personal/grus
+```
+
+Then run on the command line via:
+
+```
+grus ...
+```
+
 ### Via binary
 
 Grab one of the fat jars listed below and run via `java -jar DOWNLOADED_JAR.jar`. 
