@@ -1,5 +1,6 @@
 package org.senkbeil.grus
 
+import java.io.FileNotFoundException
 import java.net.URL
 import java.nio.file._
 
@@ -98,8 +99,12 @@ class Generator(
 
     // Copy all static content
     val staticDirPath = Paths.get(inputDir, staticDir)
-    logger.trace(s"Copying static files from $staticDirPath to $outputDirPath")
-    FileUtils.copyDirectory(staticDirPath.toFile, outputDirPath.toFile)
+    if (staticDirPath.toFile.exists()) {
+      logger.trace(s"Copying static files from $staticDirPath to $outputDirPath")
+      FileUtils.copyDirectory(staticDirPath.toFile, outputDirPath.toFile)
+    } else {
+      logger.warn(s"$staticDirPath does not exist, so skipping static files")
+    }
 
     // Generate .nojekyll file
     if (generateOptions.doNotGenerateNoJekyllFile()) {
@@ -112,70 +117,74 @@ class Generator(
 
     // Process all markdown files
     val srcDirPath = Paths.get(inputDir, srcDir)
-    logger.trace(s"Processing markdown files from $srcDirPath")
-
-    val linkedMainMenuItems = StandardMenuItem.fromPath(
-      generateOptions,
-      themeManager,
-      srcDirPath,
-      dirUseFirstChild = true
-    ).map(_.copy(children = Nil))
-    val linkedSideMenuItems = StandardMenuItem.fromPath(
-      generateOptions,
-      themeManager,
-      srcDirPath
-    )
-
-    // Create our layout context
-    val context = Context(
-      mainMenuItems = linkedMainMenuItems,
-      sideMenuItems = linkedSideMenuItems
-    )
-
-    // For each markdown file, generate its content and produce a file
-    val mdFiles = FileHelper.markdownFiles(srcDirPath)
-    val pages = mdFiles.map(f =>
-      StandardPage.Session.newInstance(generateOptions, themeManager, f)
-    ).toSeq
-
-    pages.foreach(page => {
-      @inline def markMenuItem(menuItems: Seq[MenuItem]): Seq[MenuItem] = {
-        menuItems.collect {
-          case menuItem: StandardMenuItem =>
-            menuItem.copy(
-              selected = menuItem.representsPage(page),
-              children = markMenuItem(menuItem.children)
-            )
-        }
-      }
-
-      val markedSideMenuItems = markMenuItem(context.sideMenuItems)
-      val markedMainMenuItems = context.mainMenuItems.collect {
-        case menuItem: StandardMenuItem =>
-          val matchingItem = markedSideMenuItems.find(_.name == menuItem.name)
-          val isSelected = matchingItem.exists(_.isDirectlyOrIndirectlySelected)
-          menuItem.copy(selected = isSelected)
-      }
-
-      // TODO: Is it necessary to wrap metadata access in Try? Will it fail?
-      page.render(context.copy(
-        title = Some(page.title),
-        metadata = Try(page.metadata).toOption,
-        mainMenuItems = markedMainMenuItems,
-        sideMenuItems = markedSideMenuItems
-      ))
-    })
-
-    // Produce a sitemap.xml representing the links
-    if (generateOptions.doNotGenerateSitemapFile()) {
-      logger.trace(s"Not generating $SitemapFile")
+    if (!srcDirPath.toFile.exists()) {
+      logger.warn(s"$srcDirPath does not exist, so skipping markdown files")
     } else {
-      logger.trace(s"Generating $SitemapFile")
-      createSitemapFile(
-        generateOptions.siteHost(),
-        pages,
-        outputDirPath.resolve(SitemapFile)
+      logger.trace(s"Processing markdown files from $srcDirPath")
+
+      val linkedMainMenuItems = StandardMenuItem.fromPath(
+        generateOptions,
+        themeManager,
+        srcDirPath,
+        dirUseFirstChild = true
+      ).map(_.copy(children = Nil))
+      val linkedSideMenuItems = StandardMenuItem.fromPath(
+        generateOptions,
+        themeManager,
+        srcDirPath
       )
+
+      // Create our layout context
+      val context = Context(
+        mainMenuItems = linkedMainMenuItems,
+        sideMenuItems = linkedSideMenuItems
+      )
+
+      // For each markdown file, generate its content and produce a file
+      val mdFiles = FileHelper.markdownFiles(srcDirPath)
+      val pages = mdFiles.map(f =>
+        StandardPage.Session.newInstance(generateOptions, themeManager, f)
+      ).toSeq
+
+      pages.foreach(page => {
+        @inline def markMenuItem(menuItems: Seq[MenuItem]): Seq[MenuItem] = {
+          menuItems.collect {
+            case menuItem: StandardMenuItem =>
+              menuItem.copy(
+                selected = menuItem.representsPage(page),
+                children = markMenuItem(menuItem.children)
+              )
+          }
+        }
+
+        val markedSideMenuItems = markMenuItem(context.sideMenuItems)
+        val markedMainMenuItems = context.mainMenuItems.collect {
+          case menuItem: StandardMenuItem =>
+            val matchingItem = markedSideMenuItems.find(_.name == menuItem.name)
+            val isSelected = matchingItem.exists(_.isDirectlyOrIndirectlySelected)
+            menuItem.copy(selected = isSelected)
+        }
+
+        // TODO: Is it necessary to wrap metadata access in Try? Will it fail?
+        page.render(context.copy(
+          title = Some(page.title),
+          metadata = Try(page.metadata).toOption,
+          mainMenuItems = markedMainMenuItems,
+          sideMenuItems = markedSideMenuItems
+        ))
+      })
+
+      // Produce a sitemap.xml representing the links
+      if (generateOptions.doNotGenerateSitemapFile()) {
+        logger.trace(s"Not generating $SitemapFile")
+      } else {
+        logger.trace(s"Generating $SitemapFile")
+        createSitemapFile(
+          generateOptions.siteHost(),
+          pages,
+          outputDirPath.resolve(SitemapFile)
+        )
+      }
     }
   }
 

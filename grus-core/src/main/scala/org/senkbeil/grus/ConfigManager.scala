@@ -93,15 +93,15 @@ class ConfigManager {
     logger.trace(s"Checking if config file exists: ${file.getName}")
     val f = if (file.isFile && file.exists()) Some(file) else None
 
-    logger.info(s"Loading configuration from ${file.getName}")
     val toml = f.flatMap(f => {
+      logger.verbose(s"Loading configuration from ${file.getName}")
       val t = Try((new Toml).read(f))
       t.failed.foreach(logger.error("Config load error", _: Throwable))
       t.toOption
     })
 
     val tomlSection = toml.flatMap(t => Option(t.getTable(category)))
-    if (tomlSection.isEmpty) logger.error(s"Missing '$category' in config!")
+    if (tomlSection.nonEmpty) logger.verbose(s"Found '$category' in config!")
 
     // NOTE: Currently, we just convert all keys to command line arguments.
     //       Is there a better way?
