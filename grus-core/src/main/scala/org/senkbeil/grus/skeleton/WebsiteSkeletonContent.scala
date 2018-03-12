@@ -27,10 +27,18 @@ class WebsiteSkeletonContent(
   private lazy val RootStylesPath = DefaultSiteStaticPath.resolve("styles")
 
   private lazy val ReadmeText = s"""
+  |# Your Grus Website
   |
+  |Welcome to your Grus-powered website!
   """.stripMargin
   private lazy val GrusTomlText = s"""
+  |[generate]
   |
+  |[skeleton]
+  |
+  |[publish]
+  |
+  |[serve]
   """.stripMargin
 
   private lazy val IndexMdText = s"""

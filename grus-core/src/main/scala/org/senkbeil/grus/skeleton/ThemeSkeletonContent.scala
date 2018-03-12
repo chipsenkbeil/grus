@@ -1,5 +1,8 @@
 package org.senkbeil.grus.skeleton
 import java.nio.file.{Path, Paths}
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Date
 
 import org.senkbeil.grus.Config.CommandSkeletonOptions
 
@@ -13,6 +16,8 @@ class ThemeSkeletonContent(
   private val skeletonOptions: CommandSkeletonOptions
 ) extends SkeletonContent {
   import SkeletonContent.Implicits._
+  private lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+  private lazy val dateString = dateFormat.format(Date.from(Instant.now()))
 
   val DefaultReadmeFile: Path = Paths.get("README.md")
   val DefaultProjectFile: Path = Paths.get("build.sbt")
@@ -25,12 +30,80 @@ class ThemeSkeletonContent(
   private val StylesRoot = SrcRoot.resolve("styles")
 
   private lazy val ReadmeText = """
+  |# Your Grus Theme
+  |
+  |TODO: Provide description of content
   """.stripMargin
-  private lazy val BuildSbtText = """
+
+  private lazy val LayoutBI = org.senkbeil.grus.layouts.BuildInfo
+  private lazy val BuildSbtText = s"""
+  |/**
+  | * Grus theme build.sbt
+  | * Generated $dateString
+  | */
+  |name := "grus-example-theme"
+  |
+  |libraryDependencies ++= Seq(
+  |  "${LayoutBI.organization}" %% "${LayoutBI.name}" % "${LayoutBI.version}"
+  |)
   """.stripMargin
   private lazy val ExamplePageText = """
-  """.stripMargin
+package com.example.layouts
+
+import com.example.styles.PageStyle
+import org.senkbeil.grus.layouts.{Context, Page}
+
+import scalatags.Text.all._
+import scalatags.Text
+
+/**
+ * Represents the layout for a common site page.
+ *
+ * @param selectedMenuItems Will mark each menu item whose name is provided
+ *                          as selected
+ * @param syntaxHighlightTheme The theme to use for syntax highlighting; themes
+ *                             are from the highlight.js list
+ */
+abstract class SitePage(
+  val selectedMenuItems: Seq[String] = Nil,
+  val syntaxHighlightTheme: String = "agate"
+) extends Page {
+  override protected def preHeadContent(context: Context): Seq[Modifier] =
+    super.preHeadContent(context) ++ Seq(
+      PageStyle.styleSheetText.toStyleTag
+    )
+}
+""".stripMargin
+
   private lazy val ExampleStyleText = """
+package com.example.styles
+
+import scalatags.Text.all._
+import scalatags.stylesheet._
+
+/**
+ * Represents stylesheet for all pages.
+ */
+object PageStyle extends CascadingStyleSheet {
+  initStyleSheet()
+
+  import scalatags.Text.styles2.{content => afterContent}
+
+  //
+  // HERO CSS
+  //
+
+  lazy val heroTitle: Cls = cls(
+    display := "flex",
+    alignItems := "center",
+    justifyContent := "space-around",
+    fontSize := "5em",
+
+    img(
+      padding := "0.5em"
+    )
+  )
+}
   """.stripMargin
 
   /**

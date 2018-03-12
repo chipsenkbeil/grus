@@ -30,7 +30,9 @@ lazy val grusCore = project
     CrossPerProjectPlugin
   ).settings(
     name := "grus-core",
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name, organization, version, scalaVersion, sbtVersion
+    ),
     buildInfoPackage := "org.senkbeil.grus",
     mainClass in assembly := Some("org.senkbeil.grus.Main"),
     assemblyOutputPath in assembly :=
@@ -57,7 +59,9 @@ lazy val grusLayouts = project
     CrossPerProjectPlugin
   ).settings(
     name := "grus-layouts",
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name, organization, version, scalaVersion, sbtVersion
+    ),
     buildInfoPackage := "org.senkbeil.grus.layouts",
     assembly := { null } // Stub out assembly on layouts
   )
@@ -76,7 +80,9 @@ lazy val sbtPlugin = project
     CrossPerProjectPlugin
   ).settings(
     name := "sbt-grus",
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name, organization, version, scalaVersion, sbtVersion
+    ),
     buildInfoPackage := "org.senkbeil.grus.sbt",
     assembly := { null } // Stub out assembly on sbt plugin
   ).dependsOn(grusCore)
