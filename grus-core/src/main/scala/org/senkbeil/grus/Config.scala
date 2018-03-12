@@ -158,6 +158,25 @@ object Config {
   }
 
   // ===========================================================================
+  // = SKELETON SETTINGS
+  // ===========================================================================
+
+  trait CommandSkeletonOptions extends CommandCommonOptions {
+    /** Represents the project directory of skeleton content. */
+    val projectDir: ScallopOption[String] = opt[String](
+      descr = "The directory where skeleton content is created",
+      argName = "dir",
+      default = Some(".")
+    )
+
+    /** Represents whether or not a skeleton is generated for a theme. */
+    val forTheme: ScallopOption[Boolean] = opt[Boolean](
+      descr = "If provided, indicates generating theme instead of website",
+      default = Some(false)
+    )
+  }
+
+  // ===========================================================================
   // = GENERATE SETTINGS
   // ===========================================================================
 
@@ -408,6 +427,18 @@ class Config(arguments: Seq[String])
   // = COMMON OPTIONS AND SETTINGS
   // ===========================================================================
   import Config._
+
+  // ===========================================================================
+  // = SKELETON SETTINGS
+  // ===========================================================================
+
+  /** Represents the command to generate a new theme or website. */
+  val skeleton = new Subcommand("skeleton") with CommandSkeletonOptions {
+    descr("Produces an initial theme or website to flesh out")
+  }
+  addSubcommand(skeleton)
+
+  def usingSkeletonCommand: Boolean = subcommand.exists(_ == skeleton)
 
   // ===========================================================================
   // = GENERATE SETTINGS

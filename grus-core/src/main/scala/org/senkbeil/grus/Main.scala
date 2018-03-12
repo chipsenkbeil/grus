@@ -1,6 +1,6 @@
 package org.senkbeil.grus
 
-import org.senkbeil.grus.commands.{GenerateCommand, PublishCommand, ServeCommand}
+import org.senkbeil.grus.commands.{GenerateCommand, PublishCommand, ServeCommand, SkeletonCommand}
 
 /**
  * Main entrypoint for generating and serving site.
@@ -17,8 +17,12 @@ object Main {
     import Config.Implicits._ // For logLevel()
     Logger.setDefaultLevel(config.logLevel())
 
+    // Produce skeleton content
+    if (config.usingSkeletonCommand) {
+      SkeletonCommand.execute(config)
+
     // Generate content
-    if (config.usingGenerateCommand) {
+    } else if (config.usingGenerateCommand) {
       GenerateCommand.execute(config)
 
     // Serve generated content
