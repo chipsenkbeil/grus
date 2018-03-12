@@ -66,6 +66,7 @@ object Config {
         if (config.usingGenerateCommand) config.generate.logLevel()
         else if (config.usingServeCommand) config.serve.logLevel()
         else if (config.usingPublishCommand) config.publish.logLevel()
+        else if (config.usingSkeletonCommand) config.skeleton.logLevel()
         else DefaultLogLevel
       }
 
@@ -78,6 +79,7 @@ object Config {
         if (config.usingGenerateCommand) config.generate.stackTraceDepth()
         else if (config.usingServeCommand) config.serve.stackTraceDepth()
         else if (config.usingPublishCommand) config.publish.stackTraceDepth()
+        else if (config.usingSkeletonCommand) config.skeleton.stackTraceDepth()
         else DefaultStackTraceDepth
       }
     }
@@ -172,6 +174,12 @@ object Config {
     /** Represents whether or not a skeleton is generated for a theme. */
     val forTheme: ScallopOption[Boolean] = opt[Boolean](
       descr = "If provided, indicates generating theme instead of website",
+      default = Some(false)
+    )
+
+    /** Represents a flag to NOT clear the project directory. */
+    val doNotClearProjectDir: ScallopOption[Boolean] = opt[Boolean](
+      descr = "If provided, will not clear the project directory",
       default = Some(false)
     )
   }

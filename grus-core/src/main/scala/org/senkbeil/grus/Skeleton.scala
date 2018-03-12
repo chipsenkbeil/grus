@@ -1,8 +1,9 @@
 package org.senkbeil.grus
 
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 
 import org.senkbeil.grus.Config.CommandSkeletonOptions
+import org.senkbeil.grus.skeleton.{ThemeSkeletonContent, WebsiteSkeletonContent}
 
 /**
  * Represents a producer of outlines based on a configuration.
@@ -28,16 +29,20 @@ class Skeleton(
    */
   def run(): Unit = {
     val projectDir = skeletonOptions.projectDir()
+    val shouldClearPath = !skeletonOptions.doNotClearProjectDir()
     val isForTheme = skeletonOptions.forTheme()
     val isForWebsite = !isForTheme
 
-    val rootPath = Paths.get(projectDir)
-    logger.verbose(s"Root path: $rootPath")
+    val rootPath = Paths.get(projectDir, java.io.File.separator).toAbsolutePath
 
-    if (isForTheme) {
-      logger.error("TODO: Implement theme support")
+    val skeletonContent = Option(if (isForTheme) {
+      new ThemeSkeletonContent(skeletonOptions)
     } else if (isForWebsite) {
-      logger.error("TODO: Implement website support")
-    }
+      new WebsiteSkeletonContent(skeletonOptions)
+    } else null)
+
+    skeletonContent.foreach(
+      _.writeToPath(rootPath, clearPath = shouldClearPath)
+    )
   }
 }
