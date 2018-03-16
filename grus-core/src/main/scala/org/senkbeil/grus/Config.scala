@@ -66,6 +66,7 @@ object Config {
         if (config.usingGenerateCommand) config.generate.logLevel()
         else if (config.usingServeCommand) config.serve.logLevel()
         else if (config.usingPublishCommand) config.publish.logLevel()
+        else if (config.usingSkeletonCommand) config.skeleton.logLevel()
         else DefaultLogLevel
       }
 
@@ -78,6 +79,7 @@ object Config {
         if (config.usingGenerateCommand) config.generate.stackTraceDepth()
         else if (config.usingServeCommand) config.serve.stackTraceDepth()
         else if (config.usingPublishCommand) config.publish.stackTraceDepth()
+        else if (config.usingSkeletonCommand) config.skeleton.stackTraceDepth()
         else DefaultStackTraceDepth
       }
     }
@@ -155,6 +157,31 @@ object Config {
       }
       case e: Throwable => throw e
     }
+  }
+
+  // ===========================================================================
+  // = SKELETON SETTINGS
+  // ===========================================================================
+
+  trait CommandSkeletonOptions extends CommandCommonOptions {
+    /** Represents the project directory of skeleton content. */
+    val projectDir: ScallopOption[String] = opt[String](
+      descr = "The directory where skeleton content is created",
+      argName = "dir",
+      default = Some(".")
+    )
+
+    /** Represents whether or not a skeleton is generated for a theme. */
+    val forTheme: ScallopOption[Boolean] = opt[Boolean](
+      descr = "If provided, indicates generating theme instead of website",
+      default = Some(false)
+    )
+
+    /** Represents a flag to NOT clear the project directory. */
+    val doNotClearProjectDir: ScallopOption[Boolean] = opt[Boolean](
+      descr = "If provided, will not clear the project directory",
+      default = Some(false)
+    )
   }
 
   // ===========================================================================
@@ -408,6 +435,18 @@ class Config(arguments: Seq[String])
   // = COMMON OPTIONS AND SETTINGS
   // ===========================================================================
   import Config._
+
+  // ===========================================================================
+  // = SKELETON SETTINGS
+  // ===========================================================================
+
+  /** Represents the command to generate a new theme or website. */
+  val skeleton = new Subcommand("skeleton") with CommandSkeletonOptions {
+    descr("Produces an initial theme or website to flesh out")
+  }
+  addSubcommand(skeleton)
+
+  def usingSkeletonCommand: Boolean = subcommand.exists(_ == skeleton)
 
   // ===========================================================================
   // = GENERATE SETTINGS

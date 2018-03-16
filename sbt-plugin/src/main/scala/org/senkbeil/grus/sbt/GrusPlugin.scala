@@ -8,11 +8,18 @@ object GrusPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
 
   override val buildSettings = Seq(commands ++= Seq(
+    skeletonCommand,
     generateCommand,
     serveCommand,
     publishCommand,
     rawCommand
   ))
+
+  lazy val skeletonCommand: Command =
+    Command.args("grusSkeleton", "<arg>") { (state: State, args: Seq[String]) =>
+      org.senkbeil.grus.Main.main(("skeleton" +: args).toArray)
+      state
+    }
 
   lazy val generateCommand: Command =
     Command.args("grusGenerate", "<arg>") { (state: State, args: Seq[String]) =>
