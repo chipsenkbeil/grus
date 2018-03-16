@@ -65,7 +65,7 @@ import scalatags.Text
  * @param syntaxHighlightTheme The theme to use for syntax highlighting; themes
  *                             are from the highlight.js list
  */
-abstract class SitePage(
+class SitePage(
   val selectedMenuItems: Seq[String] = Nil,
   val syntaxHighlightTheme: String = "agate"
 ) extends Page {
@@ -90,20 +90,7 @@ object PageStyle extends CascadingStyleSheet {
 
   import scalatags.Text.styles2.{content => afterContent}
 
-  //
-  // HERO CSS
-  //
-
-  lazy val heroTitle: Cls = cls(
-    display := "flex",
-    alignItems := "center",
-    justifyContent := "space-around",
-    fontSize := "5em",
-
-    img(
-      padding := "0.5em"
-    )
-  )
+  /* Provide your CSS stylings here */
 }
   """.stripMargin
 
