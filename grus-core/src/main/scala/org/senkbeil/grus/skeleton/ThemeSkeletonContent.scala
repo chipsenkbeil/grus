@@ -52,6 +52,7 @@ package com.example.layouts
 
 import com.example.styles.PageStyle
 import org.senkbeil.grus.layouts.{Context, Page}
+import org.senkbeil.grus.layouts.Implicits._
 
 import scalatags.Text.all._
 import scalatags.Text
