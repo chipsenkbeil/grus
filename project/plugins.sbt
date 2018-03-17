@@ -12,3 +12,6 @@ addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 // Use to inject version into code itself
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.7.0")
+
+// Use to facilitate easier release process
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
