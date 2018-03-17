@@ -142,8 +142,8 @@ object Common {
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      runClean,
-      runTest,
+      releaseStepCommand("+clean"),
+      releaseStepCommand("+test"),
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
