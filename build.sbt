@@ -9,8 +9,7 @@ lazy val root = project
     // Do not publish the aggregation project
     publishArtifact := false,
     publishLocal := {},
-    assembly := { null }, // Stub out assembly on root
-    releaseCrossBuild := true
+    assembly := { null } // Stub out assembly on root
   ).aggregate(
     grusCore,
     grusLayouts,
