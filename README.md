@@ -39,6 +39,8 @@ To use in sbt (0.13.x) to generate your own content, add the following plugin:
 addSbtPlugin("org.senkbeil" %% "sbt-grus" % "0.1.1")
 ```
 
+- `sbt grusSkeleton` will create a new theme or website outline in the
+  specified output directory
 - `sbt grusGenerate` will generate the website and put the contents in an
   output directory
 - `sbt grusServe` will generate the website and start a server to display
